@@ -1,36 +1,469 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <link rel="manifest" href="src/assets/site.webmanifest">
-  <link rel="apple-touch-icon" sizes="180x180" href="src/assets/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="src/assets/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="src/assets/favicon-16x16.png">
-  <link rel="icon" href="src/assets/favicon.ico" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Hemiciclos — @argelecciones</title>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        :root{
+            --bg:#f8f9fc;
+            --surface:#ffffff;
+            --border:#e2e8f0;
+            --border2:#cbd5e1;
+            --text:#0f172a;
+            --muted:#64748b;
+            --subtle:#f1f5f9;
+            --pba:#1d4ed8;
+            --pba2:#1e40af;
+            --acento:#f59e0b;
+            --verde:#16a34a;
+            --rojo:#dc2626;
+            --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+            --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.05);
+        }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            min-height: 100vh;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        h1 { color: var(--text); margin-bottom: 20px; }
+        
+        /* HEADER */
+        .header{background:var(--pba);padding:18px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.2);width:100%;}
+        .header-titles{}
+        .header-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px}
+        .header-title span{color:var(--acento)}
+        .header-sub{font-size:11px;color:#93c5fd;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
 
-  <meta name="title" content="Arches - Create Parliament Diagrams" />
-  <meta name="description"
-    content="Generate and download SVG Arch Diagrams and Westminster Parliament Diagrams to represent parliaments or other legislatures with seats coloured by political parties or groupings." />
-  <meta name="keywords" content="parliament, diagram, arch, westminster, jamesm2w, politics, house, senate, legislature, westminster, maker, creator, commons" />
-  <meta name="robots" content="index, follow" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="language" content="English" />
-  <meta name="author" content="james" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image:alt" content="An arch of 50 circles in 4 rows. 25 coloured red, and 25 coloured blue." />
-  <meta property="og:url" content="https://arches.elexn.uk/" />
-  <meta property="og:title" content="Arches - Create Parliament Diagrams" />
-  <meta property="og:description"
-    content="Generate and download SVG Arch Diagrams and Westminster Parliament Diagrams to represent parliaments or other legislatures with seats coloured by political parties or groupings." />
-  <meta property="og:image" content="https://arches.elexn.uk/card_image.png" />
-  <meta property="og:site_name" content="arches elexn uk">
+        /* LAYOUT */
+        .layout{max-width:1100px;margin:0 auto;padding:28px 20px 60px;width:100%;flex:1}
+        
+        .contenedor-principal {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            align-items: flex-start;
+        }
+        
+        .panel-controles {
+            flex: 1;
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+        
+        .panel-visualizacion {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 20px;
+        }
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Arches - Create Parliament Diagrams</title>
+        .seccion-opciones {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--subtle);
+        }
+
+        .campo-opcion {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .campo-opcion label { font-weight: bold; font-size: 14px; min-width: 90px; color: var(--text); }
+        .campo-opcion input[type="text"] { flex: 1; padding: 6px; border: 1px solid var(--border2); border-radius: 4px; font-family: inherit; }
+
+        .presets-ar {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 5px;
+        }
+        .presets-ar button {
+            background: var(--subtle); border: 1px solid var(--border); padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; color: var(--text);
+        }
+        .presets-ar button:hover { background: var(--border2); }
+        
+        .partido-fila {
+            display: flex;
+            align-items: center;
+            background: var(--bg);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            gap: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .partido-fila input[type="text"] { flex: 2; padding: 5px; border: 1px solid var(--border2); border-radius: 4px; font-family: inherit; }
+        .partido-fila input[type="number"] { width: 50px; padding: 5px; border: 1px solid var(--border2); border-radius: 4px; text-align: center; font-family: inherit; }
+        
+        .picker-contenedor { display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: bold; color: var(--muted); }
+        .picker-contenedor input[type="color"] { border: none; width: 28px; height: 28px; cursor: pointer; background: none; }
+
+        .btn-cant { padding: 5px 8px; font-weight: bold; cursor: pointer; border: 1px solid var(--border2); background: var(--surface); border-radius: 4px; }
+        .btn-cant:hover { background: var(--subtle); }
+        
+        .btn-add { background: var(--pba); color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 6px; width: 100%; cursor: pointer; margin-top: 10px; font-family: inherit; }
+        .btn-add:hover { background: var(--pba2); }
+
+        .btn-del { background: transparent; color: var(--rojo); border: 1px solid var(--border); padding: 6px 10px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .btn-del:hover { background: var(--rojo); color: white; border-color: var(--rojo); }
+
+        svg { width: 100%; max-width: 550px; }
+        
+        .titulo-renderizado { font-family: inherit; font-weight: bold; font-size: 14px; fill: var(--text); text-anchor: middle; }
+        .total-renderizado { font-family: inherit; font-weight: 900; font-size: 26px; fill: var(--text); text-anchor: middle; }
+        
+        /* FOOTER LEGAL */
+        .footer { background: var(--surface); border-top: 1px solid var(--border); padding: 24px 20px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.6; margin-top: auto; width: 100%; }
+        .footer a { color: var(--pba); text-decoration: none; font-weight: 700; }
+        .footer a:hover { text-decoration: underline; }
+    </style>
 </head>
-<body class="font-sans bg-gray-100">
-  <div id="app"></div>
+<body>
 
-  <script type="module" src="/src/main.js"></script>
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-titles">
+            <div class="header-title">Generador de <span>Hemiciclos</span></div>
+            <div class="header-sub"> @ArgElecciones Tools </div>
+        </div>
+    </div>
+
+    <!-- WRAPPER PARA ENVOLVER TU CONTENEDOR PRINCIPAL ORIGINAL -->
+    <div class="layout">
+
+    <div class="contenedor-principal">
+        <!-- CONTROLES -->
+<div class="panel-controles">
+    <div class="seccion-opciones">
+        <div class="presets-ar">
+            <span>Ajustes Rápidos:</span>
+            <button onclick="setAsientosTotales(257)">257 (Diputados)</button>
+            <button onclick="setAsientosTotales(72)">72 (Senado)</button>
+        </div>
+        <div class="campo-opcion">
+            <label>Bancas Totales:</label>
+            <input type="number" id="inputTotalAsientos" value="257" style="width: 70px; padding: 6px;" oninput="actualizarGrafico()">
+        </div>
+        <div class="campo-opcion">
+            <label>Título:</label>
+            <input type="text" id="inputTitulo" value="Cámara de Diputados" oninput="actualizarGrafico()">
+        </div>
+        <!-- Interruptores de Visualización agrupados de forma prolija -->
+        <div class="campo-opcion" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--border);">
+            <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="checkDense" checked onchange="actualizarGrafico()"> Diseño compacto (Filas densas)
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="checkMostrarTotal" checked onchange="actualizarGrafico()"> Mostrar número total en centro
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="checkMostrarTitulo" checked onchange="actualizarGrafico()"> Mostrar texto del título
+            </label>
+        </div>
+    </div>
+
+    <h3>Bloques / Partidos</h3>
+	<div id="alertaAsientos" style="padding: 8px 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; font-weight: bold;"></div>
+    <div id="listaPartidos"></div>
+    <button class="btn-add" onclick="agregarPartido()">+ Nuevo Bloque</button>
+</div>
+        
+        <!-- VISUALIZACIÓN Y DESCARGAS -->
+<div class="panel-visualizacion">
+    <svg id="hemicicloSVG" viewBox="0 0 360 205"></svg>
+    
+    <!-- Botones de Exportación -->
+    <div style="margin-top: 15px; display: flex; gap: 10px; width: 100%;">
+        <button onclick="descargarSVG()" style="flex: 1; background: #0f172a; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer;">Descargar SVG</button>
+        <button onclick="descargarPNG()" style="flex: 1; background: #0f172a; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer;">Descargar PNG</button>
+    </div>
+
+    <!-- Sección de JSON (Importar / Exportar) -->
+    <div style="margin-top: 20px; width: 100%; border-top: 2px solid #f1f5f9; padding-top: 15px;">
+        <button onclick="togglePanelJSON()" style="background: #64748b; color: white; border: none; padding: 8px 12px; font-size: 13px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%;">
+            📊 Importar / Exportar JSON
+        </button>
+        
+        <div id="contenedorJSON" style="display: none; margin-top: 10px;">
+            <p style="font-size: 12px; color: #64748b; margin: 5px 0;">Pegá tu JSON acá para cargar datos o copiá el actual para guardarlo:</p>
+            <textarea id="textareaJSON" rows="6" style="width: 100%; font-family: monospace; font-size: 12px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
+            <button onclick="importarJSON()" style="margin-top: 8px; background: #10b981; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%;">
+                Aplicar cambios desde JSON
+            </button>
+        </div>
+    </div>
+</div>
+
+    <script src="arches.js"></script>
+    <script>
+        // Array dinámico inicial en español
+let partidos = [
+    { nombre: "Bloque 1", bancas: 99, fill: "#00aeee", outline: "#ffffff" },
+    { nombre: "Bloque 2", bancas: 60, fill: "#5a2d82", outline: "#ffffff" }
+];
+
+function renderizarFormulariosPartidos() {
+    const contenedor = document.getElementById('listaPartidos');
+    contenedor.innerHTML = '';
+
+    partidos.forEach((partido, index) => {
+        const fila = document.createElement('div');
+        fila.className = 'partido-fila';
+        fila.innerHTML = `
+            <input type="text" value="${partido.nombre}" placeholder="Nombre del Partido" oninput="partidos[${index}].nombre = this.value; actualizarGrafico()">
+            
+            <button class="btn-cant" onclick="cambiarBancas(${index}, -1)">-</button>
+            <input type="number" value="${partido.bancas}" min="0" oninput="partidos[${index}].bancas = parseInt(this.value) || 0; actualizarGrafico()" style="width: 45px;">
+            <button class="btn-cant" onclick="cambiarBancas(${index}, 1)">+</button>
+            
+            <div class="picker-contenedor">
+                <span>Relleno</span>
+                <input type="color" value="${partido.fill}" onchange="partidos[${index}].fill = this.value; actualizarGrafico()">
+            </div>
+
+            <div class="picker-contenedor">
+                <span>Contorno</span>
+                <input type="color" value="${partido.outline}" onchange="partidos[${index}].outline = this.value; actualizarGrafico()">
+            </div>
+
+            <button class="btn-del" onclick="eliminarPartido(${index})">✕</button>
+        `;
+        contenedor.appendChild(fila);
+    });
+}
+function eliminarPartido(index) {
+    // Elimina el partido del array usando su posición
+    partidos.splice(index, 1);
+    // Vuelve a dibujar los formularios y el hemiciclo reflectando el cambio
+    renderizarFormulariosPartidos();
+    actualizarGrafico();
+}
+
+function agregarPartido() {
+    const coloresRandom = ['#cc0000', '#ffcc00', '#8b0000', '#2ecc71', '#34495e'];
+    const colorElegido = coloresRandom[partidos.length % coloresRandom.length];
+    
+    partidos.push({
+        nombre: "Nuevo Bloque " + (partidos.length + 1),
+        bancas: 10,
+        fill: colorElegido,
+        outline: "#ffffff"
+            });
+            renderizarFormulariosPartidos();
+            actualizarGrafico();
+        }
+
+        function cambiarBancas(index, delta) {
+            partidos[index].bancas = Math.max(0, partidos[index].bancas + delta);
+            renderizarFormulariosPartidos();
+            actualizarGrafico();
+        }
+
+        function setAsientosTotales(cantidad) {
+            document.getElementById('inputTotalAsientos').value = cantidad;
+            document.getElementById('inputTitulo').value = cantidad === 257 ? "Cámara de Diputados" : "Cámara de Senadores";
+            actualizarGrafico();
+        }
+
+function actualizarGrafico() {
+    const svg = document.getElementById('hemicicloSVG');
+    svg.innerHTML = '';
+
+    const totalConfigurado = parseInt(document.getElementById('inputTotalAsientos').value) || 0;
+    const tituloText = document.getElementById('inputTitulo').value;
+    const esDenso = document.getElementById('checkDense').checked; // Captura el tilde
+	
+    // Calcular cuántas bancas sumó el usuario en total entre todos los partidos
+    const totalAsignado = partidos.reduce((sum, p) => sum + p.bancas, 0);
+    const alerta = document.getElementById('alertaAsientos');
+        
+    if (alerta) {
+        if (totalAsignado === totalConfigurado) {
+            alerta.style.background = "var(--subtle)";
+            alerta.style.color = "var(--verde)";
+            alerta.style.border = "1px solid var(--border)";
+            alerta.textContent = `✓ Configuración completa: ${totalAsignado} de ${totalConfigurado} bancas asignadas.`;
+        } else if (totalAsignado < totalConfigurado) {
+            alerta.style.background = "#fff9db";
+            alerta.style.color = "var(--acento)";
+            alerta.style.border = "1px solid #ffe066";
+            alerta.textContent = `⚠ Faltan asignar ${totalConfigurado - totalAsignado} bancas (Cargadas: ${totalAsignado}/${totalConfigurado}).`;
+        } else {
+            alerta.style.background = "#fff5f5";
+            alerta.style.color = "var(--rojo)";
+            alerta.style.border = "1px solid #ffc9c9";
+            alerta.textContent = `✕ Te pasaste por ${totalAsignado - totalConfigurado} bancas (Cargadas: ${totalAsignado}/${totalConfigurado}). Los excedentes no se dibujarán.`;
+        }
+    }
+
+    // LE PASAMOS esDenso A LA FUNCIÓN MATEMÁTICA
+    const posiciones = generarHemicicloOficial(totalConfigurado, esDenso);
+
+    let mapeoEstilos = [];
+    partidos.forEach(partido => {
+        for(let i = 0; i < partido.bancas; i++) {
+            mapeoEstilos.push({ fill: partido.fill, outline: partido.outline });
+        }
+    });
+
+    while(mapeoEstilos.length < totalConfigurado) {
+        mapeoEstilos.push({ fill: "#e2e8f0", outline: "#ffffff" });
+    }
+
+    posiciones.forEach((p, idx) => {
+        if (!mapeoEstilos[idx]) return;
+
+        const circulo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circulo.setAttribute("cx", p.x);
+        circulo.setAttribute("cy", p.y);
+        circulo.setAttribute("r", p.r - 0.25);
+        circulo.style.fill = mapeoEstilos[idx].fill;
+        circulo.style.stroke = mapeoEstilos[idx].outline;
+        circulo.style.strokeWidth = "0.4px";
+                   
+        svg.appendChild(circulo);
+    });
+
+// Dibujar el número total en el centro solo si el checkbox está activo
+    if (document.getElementById('checkMostrarTotal')?.checked !== false) {
+        const textTotal = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        textTotal.setAttribute("x", "175");
+        textTotal.setAttribute("y", "165");
+        textTotal.setAttribute("class", "total-renderizado");
+        textTotal.textContent = totalConfigurado;
+        svg.appendChild(textTotal);
+    }
+
+    // Dibujar el título de la cámara solo si hay texto y el checkbox está activo
+    if (document.getElementById('checkMostrarTitulo')?.checked !== false && tituloText.trim() !== "") {
+        const textTitulo = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        textTitulo.setAttribute("x", "175");
+        textTitulo.setAttribute("y", "190");
+        textTitulo.setAttribute("class", "titulo-renderizado");
+        textTitulo.textContent = tituloText;
+        svg.appendChild(textTitulo);
+    }
+}
+
+// Ejecución inicial
+renderizarFormulariosPartidos();
+actualizarGrafico();
+
+		// --- FUNCIONES DE JSON ---
+
+// Abre y cierra el panel de JSON, y además carga el JSON actual del gráfico
+function togglePanelJSON() {
+    const contenedor = document.getElementById('contenedorJSON');
+    const textarea = document.getElementById('textareaJSON');
+    
+    if (contenedor.style.display === 'none') {
+        contenedor.style.display = 'block';
+        // Exporta el estado actual ordenado de forma prolija al textarea
+        textarea.value = JSON.stringify(partidos, null, 2);
+    } else {
+        contenedor.style.display = 'none';
+    }
+}
+
+// Lee lo que el usuario escribió en el textarea y actualiza el gráfico
+function importarJSON() {
+    const texto = document.getElementById('textareaJSON').value;
+    try {
+        const datosParseados = JSON.parse(texto);
+        
+        // Validación básica de que sea un array
+        if (Array.isArray(datosParseados)) {
+            partidos = datosParseados;
+            renderizarFormulariosPartidos();
+            actualizarGrafico();
+            alert("¡Datos cargados con éxito!");
+        } else {
+            alert("El formato JSON debe ser una lista de partidos [ {...}, {...} ]");
+        }
+    } catch (e) {
+        alert("Error en el formato del JSON. Revisá que no falten comillas o comas.");
+    }
+}
+
+
+// --- FUNCIONES DE DESCARGA (SVG Y PNG) ---
+
+function descargarSVG() {
+    const svgEl = document.getElementById('hemicicloSVG');
+    const serializer = new XMLSerializer();
+    let source = serializer.serializeToString(svgEl);
+    
+    // Asegurar los namespaces para que se vea bien de forma externa
+    if(!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    
+    const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "hemiciclo.svg";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function descargarPNG() {
+    const svgEl = document.getElementById('hemicicloSVG');
+    const serializer = new XMLSerializer();
+    const source = serializer.serializeToString(svgEl);
+    
+    // Crear un canvas intermedio para "dibujar" el SVG en un formato de imagen real
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    
+    // Le damos buena resolución multiplicando el tamaño nativo
+    canvas.width = 1440; 
+    canvas.height = 820;
+    
+    const img = new Image();
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+    
+    img.onload = function() {
+        // Se eliminó el rellenado blanco (fillStyle/fillRect) para preservar la transparencia nativa
+        
+        // Dibujamos la imagen del SVG escalada al tamaño del canvas
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Forzamos la descarga del archivo generado
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = "hemiciclo.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+}
+    </script>
+	</div>
+	
+	<!-- FOOTER LEGAL -->
+<div class="footer">
+    <p>Basado en la herramienta original del diagrama del Parlamento de Wikipedia (<a href="https://github.com/elexnuk/arches" target="_blank">Arches en GitHub</a>).</p>
+    <p>Código fuente de este generador disponible en <a href="https://github.com/Argelecciones/hemiciclo-arg" target="_blank">GitHub (hemiciclo-arg)</a>.</p>
+    <p style="margin-top: 8px; font-size: 11px; opacity: 0.8;">© 2026 @argelecciones · Visualización de Datos Políticos.</p>
+</div>
 </body>
 </html>

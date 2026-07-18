@@ -1,40 +1,23 @@
-# jamesm2w / ParliamentDiagram
+# 🏛️ Generador de Hemiciclos Legislativos - Argelecciones
 
-This is a Node.js and Vue.js rewrite of the [original parliament diagram creator](https://github.com/slashme/parliamentdiagram) designed for use on Wikipedia, Wikimedia Commons and Wikidata. 
-My motivation was to create a modern web application to allow for a faster and easier workflow. The algorithms which generate the diagrams are credited to the original authors [David Richfield](https://en.wikipedia.org/wiki/User:Slashme), [Mathis Rade](https://github.com/Rade-Mathis), [Ranjith Siji](https://en.wikipedia.org/wiki/User:Ranjithsiji) and [Ambady Anand S](https://en.wikipedia.org/wiki/User:Ambadyanands).
+Herramienta interactiva nativa para la visualización y diseño de parlamentos, cámaras de diputados y senados, optimizada para la creación de placas de datos electorales.
 
-![Sample image](https://parliament.jamesm2w.me/card_image.png)
+Esta es una versión completamente rediseñada, simplificada y optimizada a partir del proyecto original de `jamesm2w`. Se eliminó toda la estructura pesada de Node.js, Vue y Vite, transformando la aplicación en una **SPA (Single Page Application) nativa y auto-contenida en un solo archivo**, ideal para un flujo de trabajo veloz en producción y diseño.
 
-The application is available at [parliament.jamesm2w.me](https://parliament.jamesm2w.me/) (a build of the latest main branch deployed on github pages).
+Los algoritmos base que generan la disposición de los diagramas están acreditados a los autores originales: David Richfield, Mathis Rade, Ranjith Siji y Ambady Anand S.
 
-## Build from Source
+## ✨ Características de esta versión
+*   **Arquitectura Limpia:** Todo el sistema funciona de manera nativa en un único archivo `index.html` sin necesidad de servidores, compiladores ni dependencias externas.
+*   **Diseño Compacto:** Panel interactivo con opción de cálculo de bancas tradicional o filas densas (diseño compacto).
+*   **Fondo Transparente:** Opción directa para exportar el hemiciclo en imagen de alta resolución (PNG) con fondo transparente, ideal para insertar directo en placas de redes sociales.
+*   **Tipografía Estable:** Renderizado de textos optimizado utilizando fuentes de sistema modernas (`Segoe UI` / `-apple-system`) para garantizar que los números y títulos no se deformen al descargar el SVG o PNG.
+*   **Interfaz Dinámica:** Controles rápidos en pantalla para ocultar o mostrar el número total central y los títulos con un solo clic.
 
-1. Download the source from this github repository. 
-2. Install dependencies with `npm install`
-3. Run `npm run build` to build the application into `/dist`
-4. (Optional) Serve locally with `npm run serve`
+## 🚀 Cómo usar o modificar
+Al no requerir Node.js ni instalaciones:
+1. Cloná o descargá este repositorio.
+2. Abrí el archivo `index.html` directamente en cualquier navegador (doble clic) y ya está funcionando.
+3. Para modificar el código, solo necesitás un editor de texto (como Notepad++) y editar el `index.html`.
 
-## Development
-
-1. Download source from the github repository
-2. Install dependencies with `npm install`
-3. Launch development server with `npm run dev`
-4. Edit code. The development server should watch for any file changes and update the site.
-
-## Dependencies
-
-* Node.js & NPM
-    - Application is tested to build on Node v14 and NPM v6
-
-The following development dependencies are installed by running `npm install`
-* Vue & Vite
-* Autoprefixer
-* PostCSS
-* Tailwind CSS
-
-### Included:
-* jscolor, also available from [jscolor.com](jscolor.com).
-
-## License
-
-This tool is licensed GPL v2, see [LICENSE.md](LICENSE.md).
+## 📄 Licencia
+Herramienta bajo licencia GPL v2 (ver `LICENSE.md`). Desarrollada de forma optimizada para **@argelecciones**.

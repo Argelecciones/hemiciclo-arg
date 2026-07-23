@@ -389,20 +389,31 @@ function importarJSON() {
     try {
         const datosParseados = JSON.parse(texto);
         
-        // Validación básica de que sea un array
-        if (Array.isArray(datosParseados)) {
-            partidos = datosParseados;
-            renderizarFormulariosPartidos();
-            actualizarGrafico();
-            alert("¡Datos cargados con éxito!");
-        } else {
+        if (!Array.isArray(datosParseados)) {
             alert("El formato JSON debe ser una lista de partidos [ {...}, {...} ]");
+            return;
         }
+
+        const invalidos = datosParseados.filter(p =>
+            typeof p.nombre !== 'string' ||
+            typeof p.bancas !== 'number' || p.bancas < 0 ||
+            typeof p.fill !== 'string' ||
+            typeof p.outline !== 'string'
+        );
+
+        if (invalidos.length > 0) {
+            alert(`Hay ${invalidos.length} bloque(s) con datos inválidos. Cada uno necesita: nombre (texto), bancas (número ≥ 0), fill y outline (colores en texto, ej. "#00aeee").`);
+            return;
+        }
+
+        partidos = datosParseados;
+        renderizarFormulariosPartidos();
+        actualizarGrafico();
+        alert("¡Datos cargados con éxito!");
     } catch (e) {
         alert("Error en el formato del JSON. Revisá que no falten comillas o comas.");
     }
 }
-
 
 // --- FUNCIONES DE DESCARGA (SVG Y PNG) ---
 

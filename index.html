@@ -218,8 +218,8 @@
     <script>
         // Array dinámico inicial en español
 let partidos = [
-    { nombre: "Bloque 1", bancas: 99, fill: "#00aeee", outline: "#ffffff" },
-    { nombre: "Bloque 2", bancas: 60, fill: "#5a2d82", outline: "#ffffff" }
+    { nombre: "Bloque 1", bancas: 99, fill: "#00aeee", outline: "#ffffff", outlineWidth: 0.4 },
+    { nombre: "Bloque 2", bancas: 60, fill: "#5a2d82", outline: "#ffffff", outlineWidth: 0.4 }
 ];
 
 function renderizarFormulariosPartidos() {
@@ -242,9 +242,10 @@ function renderizarFormulariosPartidos() {
             </div>
 
             <div class="picker-contenedor">
-                <span>Contorno</span>
-                <input type="color" value="${partido.outline}" onchange="partidos[${index}].outline = this.value; actualizarGrafico()">
-            </div>
+    <span>Contorno</span>
+    <input type="color" value="${partido.outline}" onchange="partidos[${index}].outline = this.value; actualizarGrafico()">
+    <input type="number" value="${partido.outlineWidth}" min="0" max="3" step="0.1" style="width:40px;margin-top:4px" oninput="partidos[${index}].outlineWidth = parseFloat(this.value) || 0; actualizarGrafico()">
+</div>
 
             <button class="btn-del" onclick="eliminarPartido(${index})">✕</button>
         `;
@@ -268,6 +269,7 @@ function agregarPartido() {
         bancas: 10,
         fill: colorElegido,
         outline: "#ffffff"
+		outlineWidth: 0.4
             });
             renderizarFormulariosPartidos();
             actualizarGrafico();
@@ -322,7 +324,7 @@ function actualizarGrafico() {
     let mapeoEstilos = [];
     partidos.forEach(partido => {
         for(let i = 0; i < partido.bancas; i++) {
-            mapeoEstilos.push({ fill: partido.fill, outline: partido.outline });
+            mapeoEstilos.push({ fill: partido.fill, outline: partido.outline, outlineWidth: partido.outlineWidth });
         }
     });
 
@@ -338,8 +340,13 @@ function actualizarGrafico() {
         circulo.setAttribute("cy", p.y);
         circulo.setAttribute("r", p.r - 0.25);
         circulo.style.fill = mapeoEstilos[idx].fill;
-        circulo.style.stroke = mapeoEstilos[idx].outline;
-        circulo.style.strokeWidth = "0.4px";
+        const grosor = mapeoEstilos[idx].outlineWidth ?? 0.4;
+if (grosor > 0) {
+    circulo.style.stroke = mapeoEstilos[idx].outline;
+    circulo.style.strokeWidth = grosor + "px";
+} else {
+    circulo.style.stroke = "none";
+}
                    
         svg.appendChild(circulo);
     });
@@ -397,14 +404,15 @@ function importarJSON() {
         }
 
         const invalidos = datosParseados.filter(p =>
-            typeof p.nombre !== 'string' ||
-            typeof p.bancas !== 'number' || p.bancas < 0 ||
-            typeof p.fill !== 'string' ||
-            typeof p.outline !== 'string'
-        );
+    typeof p.nombre !== 'string' ||
+    typeof p.bancas !== 'number' || p.bancas < 0 ||
+    typeof p.fill !== 'string' ||
+    typeof p.outline !== 'string' ||
+    typeof p.outlineWidth !== 'number' || p.outlineWidth < 0
+);
 
         if (invalidos.length > 0) {
-            alert(`Hay ${invalidos.length} bloque(s) con datos inválidos. Cada uno necesita: nombre (texto), bancas (número ≥ 0), fill y outline (colores en texto, ej. "#00aeee").`);
+            alert(`Hay ${invalidos.length} bloque(s) con datos inválidos. Cada uno necesita: nombre (texto), bancas (número ≥ 0), fill y outline (colores en texto, ej. "#00aeee"), outlineWidth (número ≥ 0).`);
             return;
         }
 

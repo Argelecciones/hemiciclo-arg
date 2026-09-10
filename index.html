@@ -114,8 +114,9 @@
         .partido-fila input[type="text"] { flex: 2; padding: 5px; border: 1px solid var(--border2); border-radius: 4px; font-family: inherit; }
         .partido-fila input[type="number"] { width: 50px; padding: 5px; border: 1px solid var(--border2); border-radius: 4px; text-align: center; font-family: inherit; }
         
-        .picker-contenedor { display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: bold; color: var(--muted); }
-        .picker-contenedor input[type="color"] { border: none; width: 28px; height: 28px; cursor: pointer; background: none; }
+       .picker-contenedor { display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: bold; color: var(--muted); gap: 3px; }
+		.picker-contenedor input[type="color"] { border: none; width: 28px; height: 28px; cursor: pointer; background: none; }
+		.picker-contenedor input[type="number"] { width: 40px; padding: 3px; border: 1px solid var(--border2); border-radius: 4px; text-align: center; font-size: 11px; }
 
         .btn-cant { padding: 5px 8px; font-weight: bold; cursor: pointer; border: 1px solid var(--border2); background: var(--surface); border-radius: 4px; }
         .btn-cant:hover { background: var(--subtle); }
@@ -244,7 +245,7 @@ function renderizarFormulariosPartidos() {
             <div class="picker-contenedor">
     <span>Contorno</span>
     <input type="color" value="${partido.outline}" onchange="partidos[${index}].outline = this.value; actualizarGrafico()">
-    <input type="number" value="${partido.outlineWidth}" min="0" max="3" step="0.1" style="width:40px;margin-top:4px" oninput="partidos[${index}].outlineWidth = parseFloat(this.value) || 0; actualizarGrafico()">
+    <input type="number" value="${partido.outlineWidth}" min="0" max="3" step="0.1" oninput="partidos[${index}].outlineWidth = parseFloat(this.value) || 0; actualizarGrafico()">
 </div>
 
             <button class="btn-del" onclick="eliminarPartido(${index})">✕</button>

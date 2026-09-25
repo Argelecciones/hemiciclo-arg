@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Hemiciclos — @argelecciones</title>
+    <title>Generador de Hemiciclos — @ArgElecciones</title>
+<meta name="description" content="Creá y personalizá diagramas de hemiciclo para cámaras legislativas: bancas, colores y exportación en SVG o PNG.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hemiciclo-arg.netlify.app/">
+<meta property="og:title" content="Generador de Hemiciclos — @ArgElecciones">
+<meta property="og:description" content="Creá y personalizá diagramas de hemiciclo para cámaras legislativas.">
+<meta property="og:image" content="https://argelecciones.netlify.app/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Generador de Hemiciclos — @ArgElecciones">
+<meta name="twitter:description" content="Creá y personalizá diagramas de hemiciclo para cámaras legislativas.">
+<meta name="twitter:image" content="https://argelecciones.netlify.app/og-image.png">
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
         :root{
@@ -36,7 +46,7 @@
         /* HEADER */
         .header{background:var(--pba);padding:18px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.2);width:100%;}
         .header-titles{}
-		.header-logo{height:44px;width:auto}
+		.header-logo{height:44px;width:44px;object-fit:contain}
         .header-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px}
         .header-title span{color:var(--acento)}
         .header-sub{font-size:11px;color:#93c5fd;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
@@ -142,11 +152,12 @@
 
     <!-- HEADER -->
     <div class="header">
-    <img src="logo.png" alt="Logo" class="header-logo">
+        <img src="/.netlify/images?url=/logo.png&w=90&fm=webp" alt="Logo" class="header-logo">
     <div class="header-titles">
         <div class="header-title">Generador de <span>Hemiciclos</span></div>
         <div class="header-sub"> @ArgElecciones Tools </div>
     </div>
+    <a href="https://argelecciones.netlify.app/" style="margin-left:auto;color:#fff;font-size:12px;font-weight:800;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:6px;white-space:nowrap;">← Toolbox</a>
 </div>
 
     <!-- WRAPPER PARA ENVOLVER TU CONTENEDOR PRINCIPAL ORIGINAL -->
@@ -485,7 +496,7 @@ function descargarPNG() {
 <div class="footer">
     <p>Basado en la herramienta original del diagrama del Parlamento de Wikipedia (<a href="https://github.com/elexnuk/arches" target="_blank">Arches en GitHub</a>).</p>
     <p>Código fuente de este generador disponible en <a href="https://github.com/Argelecciones/hemiciclo-arg" target="_blank">GitHub (hemiciclo-arg)</a>.</p>
-    <p style="margin-top: 8px; font-size: 11px; opacity: 0.8;">© 2026 @argelecciones · Visualización de Datos Políticos.</p>
+    <p style="margin-top: 8px; font-size: 11px; opacity: 0.8;">© 2026 @ArgElecciones · Visualización de Datos Políticos.</p>
 </div>
 </body>
 </html>

@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Hemiciclos — @ArgElecciones</title>
+	
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 <meta name="description" content="Creá y personalizá diagramas de hemiciclo para cámaras legislativas: bancas, colores y exportación en SVG o PNG.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://hemiciclo-arg.netlify.app/">
@@ -15,7 +20,12 @@
 <meta name="twitter:description" content="Creá y personalizá diagramas de hemiciclo para cámaras legislativas.">
 <meta name="twitter:image" content="https://argelecciones.netlify.app/og-image.png">
     <style>
-        *{box-sizing:border-box;margin:0;padding:0}
+        
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
+body {
+    font-family: 'Inter', sans-serif;
+}
+
         :root{
             --bg:#f8f9fc;
             --surface:#ffffff;
@@ -33,7 +43,7 @@
             --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.05);
         }
         body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
+            font-family: 'Inter', sans-serif;
             background: var(--bg); 
             color: var(--text);
             min-height: 100vh;
@@ -139,8 +149,10 @@
 
         svg { width: 100%; max-width: 550px; }
         
-        .titulo-renderizado { font-family: inherit; font-weight: bold; font-size: 14px; fill: var(--text); text-anchor: middle; }
-        .total-renderizado { font-family: inherit; font-weight: 900; font-size: 26px; fill: var(--text); text-anchor: middle; }
+        
+.titulo-renderizado { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 14px; fill: var(--text); text-anchor: middle; }
+.total-renderizado { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 26px; fill: var(--text); text-anchor: middle; }
+
         
         /* FOOTER LEGAL */
         .footer { background: var(--surface); border-top: 1px solid var(--border); padding: 24px 20px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.6; margin-top: auto; width: 100%; }
@@ -182,6 +194,22 @@
 .bq-nombre{flex:1;min-width:0;padding:9px 10px;border:1px solid var(--border2);border-radius:8px;font:inherit;font-size:15px;font-weight:600;background:#fff}
 .bq-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;border:1px solid var(--border2);background:#fff;color:var(--muted);border-radius:8px;cursor:pointer;transition:all .15s}
 .bq-icon-btn:hover{background:var(--subtle);color:var(--text)}
+		
+.bq-move-btn {
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+}
+.bq-move-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+.bq-move-btn:not(:disabled):hover {
+    background: var(--pba);
+    border-color: var(--pba);
+    color: #fff;
+}
+
 .bq-icon-btn svg{width:16px;height:16px}
 .bq-del:hover{background:var(--rojo);border-color:var(--rojo);color:#fff}
 
@@ -288,7 +316,7 @@
         
         <div id="contenedorJSON" style="display: none; margin-top: 10px;">
             <p style="font-size: 12px; color: #64748b; margin: 5px 0;">Pegá tu JSON acá para cargar datos o copiá el actual para guardarlo:</p>
-            <textarea id="textareaJSON" rows="6" style="width: 100%; font-family: monospace; font-size: 12px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
+            <textarea id="textareaJSON" rows="6" style="width: 100%; font-family: 'Inter', sans-serif; font-size: 12px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
             <button onclick="importarJSON()" style="margin-top: 8px; background: #10b981; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%;">
                 Aplicar cambios desde JSON
             </button>
@@ -320,13 +348,27 @@ function renderizarFormulariosPartidos() {
         const card = document.createElement('div');
         card.className = 'bq-card';
         card.style.setProperty('--bq-color', partido.fill);
-        card.innerHTML = `
-            <div class="bq-top">
-                <input type="text" class="bq-nombre" value="${escAttr(partido.nombre)}" placeholder="Nombre del bloque"
-                    oninput="partidos[${index}].nombre = this.value; actualizarGrafico()">
-                <button class="bq-icon-btn bq-del" title="Eliminar bloque" aria-label="Eliminar bloque"
-                    onclick="eliminarPartido(${index})">${ICON_BORRAR}</button>
-            </div>
+        
+card.innerHTML = `
+    <div class="bq-top">
+        <input type="text" class="bq-nombre" value="${escAttr(partido.nombre)}" placeholder="Nombre del bloque"
+            oninput="partidos[${index}].nombre = this.value; actualizarGrafico()">
+
+        <button class="bq-icon-btn bq-move-btn"
+            title="Subir bloque"
+            aria-label="Subir bloque"
+            ${index === 0 ? 'disabled' : ''}
+            onclick="moverPartido(${index}, -1)">↑</button>
+
+        <button class="bq-icon-btn bq-move-btn"
+            title="Bajar bloque"
+            aria-label="Bajar bloque"
+            ${index === partidos.length - 1 ? 'disabled' : ''}
+            onclick="moverPartido(${index}, 1)">↓</button>
+
+        <button class="bq-icon-btn bq-del" title="Eliminar bloque" aria-label="Eliminar bloque"
+            onclick="eliminarPartido(${index})">${ICON_BORRAR}</button>
+    </div>
 
             <div class="bq-grid">
                 <div class="bq-field bq-bancas">
@@ -365,6 +407,32 @@ function eliminarPartido(index) {
     // Elimina el partido del array usando su posición
     partidos.splice(index, 1);
     // Vuelve a dibujar los formularios y el hemiciclo reflectando el cambio
+    renderizarFormulariosPartidos();
+    actualizarGrafico();
+}
+
+		
+function eliminarPartido(index) {
+    // Elimina el partido del array usando su posición
+    partidos.splice(index, 1);
+    // Vuelve a dibujar los formularios y el hemiciclo
+    renderizarFormulariosPartidos();
+    actualizarGrafico();
+}
+
+function moverPartido(index, direccion) {
+    const nuevoIndex = index + direccion;
+
+    // Evita mover el bloque fuera de la lista.
+    if (nuevoIndex < 0 || nuevoIndex >= partidos.length) {
+        return;
+    }
+
+    // Intercambia las posiciones de los dos bloques.
+    [partidos[index], partidos[nuevoIndex]] =
+        [partidos[nuevoIndex], partidos[index]];
+
+    // Actualiza las tarjetas y vuelve a dibujar el hemiciclo.
     renderizarFormulariosPartidos();
     actualizarGrafico();
 }
@@ -466,6 +534,7 @@ if (grosor > 0) {
         textTotal.setAttribute("x", "175");
         textTotal.setAttribute("y", "165");
         textTotal.setAttribute("class", "total-renderizado");
+		textTotal.setAttribute("font-family", "Inter, sans-serif");
         textTotal.textContent = totalConfigurado;
         svg.appendChild(textTotal);
     }
@@ -476,6 +545,7 @@ if (grosor > 0) {
         textTitulo.setAttribute("x", "175");
         textTitulo.setAttribute("y", "190");
         textTitulo.setAttribute("class", "titulo-renderizado");
+		textTitulo.setAttribute("font-family", "Inter, sans-serif");
         textTitulo.textContent = tituloText;
         svg.appendChild(textTitulo);
     }

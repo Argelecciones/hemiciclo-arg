@@ -146,6 +146,69 @@
         .footer { background: var(--surface); border-top: 1px solid var(--border); padding: 24px 20px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.6; margin-top: auto; width: 100%; }
         .footer a { color: var(--pba); text-decoration: none; font-weight: 700; }
         .footer a:hover { text-decoration: underline; }
+
+			/* ===== PANEL IZQUIERDO ===== */
+.pc-seccion{margin-bottom:24px}
+.pc-seccion:last-child{margin-bottom:0}
+.pc-titulo{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px}
+.pc-titulo svg{width:16px;height:16px;flex-shrink:0}
+
+.pc-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.pc-presets button{padding:7px 14px;border:1px solid var(--border2);background:var(--subtle);color:var(--text);font:inherit;font-size:13px;font-weight:700;border-radius:20px;cursor:pointer;transition:all .15s}
+.pc-presets button:hover{background:var(--pba);border-color:var(--pba);color:#fff}
+
+.pc-campos{display:grid;grid-template-columns:110px 1fr;gap:10px;margin-bottom:14px}
+.pc-campo{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);min-width:0}
+.pc-campo input{width:100%;padding:9px 10px;border:1px solid var(--border2);border-radius:8px;font:inherit;font-size:15px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);background:#fff}
+.pc-campo input:focus,.bq-field input:focus,.bq-nombre:focus{outline:2px solid var(--pba);outline-offset:-1px}
+
+.pc-switches{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px dashed var(--border)}
+.pc-switch{position:relative;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;user-select:none}
+.pc-switch input{position:absolute;opacity:0;width:0;height:0}
+.pc-track{width:36px;height:20px;border-radius:20px;background:var(--border2);position:relative;flex-shrink:0;transition:background .2s}
+.pc-track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .2s}
+.pc-switch input:checked + .pc-track{background:var(--pba)}
+.pc-switch input:checked + .pc-track::after{transform:translateX(16px)}
+.pc-switch input:focus-visible + .pc-track{outline:2px solid var(--pba);outline-offset:2px}
+
+.pc-alerta{padding:9px 12px;border-radius:8px;margin-bottom:12px;font-size:13px;font-weight:700;line-height:1.35}
+.pc-btn-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;margin-top:4px;border:1.5px dashed var(--border2);background:var(--subtle);color:var(--pba);font:inherit;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;transition:all .15s}
+.pc-btn-add:hover{background:var(--pba);border:1.5px solid var(--pba);color:#fff}
+.pc-btn-add svg{width:16px;height:16px}
+
+/* ===== TARJETA DE BLOQUE ===== */
+.bq-card{--bq-color:#999;background:var(--bg);border:1px solid var(--border);border-left:5px solid var(--bq-color);border-radius:10px;padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:12px}
+.bq-top{display:flex;align-items:center;gap:8px}
+.bq-nombre{flex:1;min-width:0;padding:9px 10px;border:1px solid var(--border2);border-radius:8px;font:inherit;font-size:15px;font-weight:600;background:#fff}
+.bq-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;flex-shrink:0;border:1px solid var(--border2);background:#fff;color:var(--muted);border-radius:8px;cursor:pointer;transition:all .15s}
+.bq-icon-btn:hover{background:var(--subtle);color:var(--text)}
+.bq-icon-btn svg{width:16px;height:16px}
+.bq-del:hover{background:var(--rojo);border-color:var(--rojo);color:#fff}
+
+.bq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bq-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.bq-bancas{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between}
+.bq-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.bq-stepper{display:flex;align-items:center;gap:6px}
+.bq-stepper input{width:64px}
+.bq-field input{height:36px;border:1px solid var(--border2);border-radius:8px;font:inherit;font-size:15px;text-align:center;background:#fff;color:var(--text)}
+.bq-field > input[type="number"]{width:100%}
+.bq-field input[type="color"]{width:100%;padding:2px;cursor:pointer}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:860px){
+    .layout{padding:16px 12px 40px}
+    .contenedor-principal{flex-direction:column;gap:14px}
+    .panel-controles,.panel-visualizacion{flex:none;width:100%;padding:16px}
+    .panel-visualizacion{position:static;order:-1}
+    .header{padding:14px 16px}
+    .header-title{font-size:18px}
+    .header-logo{height:36px;width:36px}
+}
+@media (max-width:480px){
+    .pc-campos{grid-template-columns:1fr}
+    .pc-campo input,.bq-field input,.bq-nombre{font-size:16px} /* evita zoom automático en iOS */
+}
     </style>
 </head>
 <body>
@@ -166,38 +229,45 @@
     <div class="contenedor-principal">
         <!-- CONTROLES -->
 <div class="panel-controles">
-    <div class="seccion-opciones">
-        <div class="presets-ar">
-            <span>Ajustes Rápidos:</span>
-            <button onclick="setAsientosTotales(257)">257 (Diputados)</button>
-            <button onclick="setAsientosTotales(72)">72 (Senado)</button>
-        </div>
-        <div class="campo-opcion">
-            <label>Bancas Totales:</label>
-            <input type="number" id="inputTotalAsientos" value="257" style="width: 70px; padding: 6px;" oninput="actualizarGrafico()">
-        </div>
-        <div class="campo-opcion">
-            <label>Título:</label>
-            <input type="text" id="inputTitulo" value="Cámara de Diputados" oninput="actualizarGrafico()">
-        </div>
-        <!-- Interruptores de Visualización agrupados de forma prolija -->
-        <div class="campo-opcion" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--border);">
-            <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; user-select: none;">
-                <input type="checkbox" id="checkDense" checked onchange="actualizarGrafico()"> Diseño compacto (Filas densas)
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; user-select: none;">
-                <input type="checkbox" id="checkMostrarTotal" checked onchange="actualizarGrafico()"> Mostrar número total en centro
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; user-select: none;">
-                <input type="checkbox" id="checkMostrarTitulo" checked onchange="actualizarGrafico()"> Mostrar texto del título
-            </label>
-        </div>
-    </div>
+    <section class="pc-seccion">
+        <h3 class="pc-titulo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h8M16 6h4M4 12h2M10 12h10M4 18h10M18 18h2"/><circle cx="14" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></svg>
+            Configuración
+        </h3>
 
-    <h3>Bloques / Partidos</h3>
-	<div id="alertaAsientos" style="padding: 8px 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; font-weight: bold;"></div>
-    <div id="listaPartidos"></div>
-    <button class="btn-add" onclick="agregarPartido()">+ Nuevo Bloque</button>
+        <div class="pc-presets">
+            <button onclick="setAsientosTotales(257)">Diputados · 257</button>
+            <button onclick="setAsientosTotales(72)">Senado · 72</button>
+        </div>
+
+        <div class="pc-campos">
+            <label class="pc-campo">Bancas totales
+                <input type="number" id="inputTotalAsientos" value="257" min="1" oninput="actualizarGrafico()">
+            </label>
+            <label class="pc-campo">Título
+                <input type="text" id="inputTitulo" value="Cámara de Diputados" oninput="actualizarGrafico()">
+            </label>
+        </div>
+
+        <div class="pc-switches">
+            <label class="pc-switch"><input type="checkbox" id="checkDense" checked onchange="actualizarGrafico()"><span class="pc-track"></span><span>Diseño compacto (filas densas)</span></label>
+            <label class="pc-switch"><input type="checkbox" id="checkMostrarTotal" checked onchange="actualizarGrafico()"><span class="pc-track"></span><span>Mostrar total en el centro</span></label>
+            <label class="pc-switch"><input type="checkbox" id="checkMostrarTitulo" checked onchange="actualizarGrafico()"><span class="pc-track"></span><span>Mostrar título</span></label>
+        </div>
+    </section>
+
+    <section class="pc-seccion">
+        <h3 class="pc-titulo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="8" r="2.5"/><circle cx="17" cy="8" r="2.5"/><circle cx="12" cy="16" r="2.5"/></svg>
+            Bloques / Partidos
+        </h3>
+        <div id="alertaAsientos" class="pc-alerta"></div>
+        <div id="listaPartidos"></div>
+        <button class="pc-btn-add" onclick="agregarPartido()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Nuevo bloque
+        </button>
+    </section>
 </div>
         
         <!-- VISUALIZACIÓN Y DESCARGAS -->
@@ -234,34 +304,61 @@ let partidos = [
     { nombre: "Bloque 2", bancas: 60, fill: "#5a2d82", outline: "#ffffff", outlineWidth: 0.4 }
 ];
 
+const ICON_MENOS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+const ICON_MAS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+const ICON_BORRAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 11v6M14 11v6"/></svg>';
+
+function escAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
 function renderizarFormulariosPartidos() {
     const contenedor = document.getElementById('listaPartidos');
     contenedor.innerHTML = '';
 
     partidos.forEach((partido, index) => {
-        const fila = document.createElement('div');
-        fila.className = 'partido-fila';
-        fila.innerHTML = `
-            <input type="text" value="${partido.nombre}" placeholder="Nombre del Partido" oninput="partidos[${index}].nombre = this.value; actualizarGrafico()">
-            
-            <button class="btn-cant" onclick="cambiarBancas(${index}, -1)">-</button>
-            <input type="number" value="${partido.bancas}" min="0" oninput="partidos[${index}].bancas = parseInt(this.value) || 0; actualizarGrafico()" style="width: 45px;">
-            <button class="btn-cant" onclick="cambiarBancas(${index}, 1)">+</button>
-            
-            <div class="picker-contenedor">
-                <span>Relleno</span>
-                <input type="color" value="${partido.fill}" onchange="partidos[${index}].fill = this.value; actualizarGrafico()">
+        const card = document.createElement('div');
+        card.className = 'bq-card';
+        card.style.setProperty('--bq-color', partido.fill);
+        card.innerHTML = `
+            <div class="bq-top">
+                <input type="text" class="bq-nombre" value="${escAttr(partido.nombre)}" placeholder="Nombre del bloque"
+                    oninput="partidos[${index}].nombre = this.value; actualizarGrafico()">
+                <button class="bq-icon-btn bq-del" title="Eliminar bloque" aria-label="Eliminar bloque"
+                    onclick="eliminarPartido(${index})">${ICON_BORRAR}</button>
             </div>
 
-            <div class="picker-contenedor">
-    <span>Contorno</span>
-    <input type="color" value="${partido.outline}" onchange="partidos[${index}].outline = this.value; actualizarGrafico()">
-    <input type="number" value="${partido.outlineWidth}" min="0" max="3" step="0.1" oninput="partidos[${index}].outlineWidth = parseFloat(this.value) || 0; actualizarGrafico()">
-</div>
+            <div class="bq-grid">
+                <div class="bq-field bq-bancas">
+                    <span class="bq-label">Bancas</span>
+                    <div class="bq-stepper">
+                        <button class="bq-icon-btn" aria-label="Restar" onclick="cambiarBancas(${index}, -1)">${ICON_MENOS}</button>
+                        <input type="number" value="${partido.bancas}" min="0"
+                            oninput="partidos[${index}].bancas = parseInt(this.value) || 0; actualizarGrafico()">
+                        <button class="bq-icon-btn" aria-label="Sumar" onclick="cambiarBancas(${index}, 1)">${ICON_MAS}</button>
+                    </div>
+                </div>
 
-            <button class="btn-del" onclick="eliminarPartido(${index})">✕</button>
+                <div class="bq-field">
+                    <span class="bq-label">Relleno</span>
+                    <input type="color" value="${partido.fill}"
+                        oninput="partidos[${index}].fill = this.value; this.closest('.bq-card').style.setProperty('--bq-color', this.value); actualizarGrafico()">
+                </div>
+
+                <div class="bq-field">
+                    <span class="bq-label">Contorno</span>
+                    <input type="color" value="${partido.outline}"
+                        oninput="partidos[${index}].outline = this.value; actualizarGrafico()">
+                </div>
+
+                <div class="bq-field">
+                    <span class="bq-label">Grosor</span>
+                    <input type="number" value="${partido.outlineWidth}" min="0" max="3" step="0.1"
+                        oninput="partidos[${index}].outlineWidth = parseFloat(this.value) || 0; actualizarGrafico()">
+                </div>
+            </div>
         `;
-        contenedor.appendChild(fila);
+        contenedor.appendChild(card);
     });
 }
 function eliminarPartido(index) {

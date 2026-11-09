@@ -18,7 +18,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .header a{margin-left:auto;color:#fff;font-size:12px;font-weight:800;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:6px;white-space:nowrap}
 .layout{max-width:1000px;margin:0 auto;padding:24px 20px 50px}
 .controles{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
-.tabs{display:flex;background:#e2e8f0;padding:4px;border-radius:8px}
+.tabs{display:flex;background:#e2e8f0;padding:4px;border-radius:8px}.lbl{display:flex;flex-direction:column;gap:3px;font:800 10px 'Inter',sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.lbl[hidden]{display:none}.controles{align-items:flex-end}
 .tab{border:none;background:transparent;padding:9px 18px;font:800 13px 'Inter',sans-serif;border-radius:6px;cursor:pointer;text-transform:uppercase;color:var(--text)}
 .tab.active{background:#1e3a8a;color:#fff}
 select{font:600 13px 'Inter',sans-serif;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;background:#fff;color:var(--text)}
@@ -54,8 +54,10 @@ svg circle.dim{opacity:.12}
 
 <div class="layout">
   <div class="controles">
+    <label class="lbl">Jurisdicción<select id="selJur"></select></label>
     <div class="tabs" id="tabs"></div>
-    <select id="selSeccion"><option value="">Todos</option></select>
+    <label class="lbl" id="lblDist">Distrito<select id="selDist"></select></label>
+    <label class="lbl">Mandato<select id="selMand"></select></label>
   </div>
   <div class="card">
     <div class="titulo" id="titulo">Cargando…</div>
@@ -68,7 +70,7 @@ svg circle.dim{opacity:.12}
 </div>
 
 <div class="footer">
-  Buenos Aires: planilla Base 24 (@ArgElecciones), solo mandatos vigentes; sección = sección electoral por la que fue electo.<br>Congreso Nacional: <a href="https://argentinadatos.com/" target="_blank">ArgentinaDatos</a> (datos de HCDN y Senado), en tiempo real.<br>
+  Provincias: planilla Base 24 (@ArgElecciones), solo mandatos vigentes. En Buenos Aires, el distrito es la sección electoral por la que fue electo.<br>Congreso Nacional: <a href="https://argentinadatos.com/" target="_blank">ArgentinaDatos</a> (datos de HCDN y Senado), en tiempo real.<br>
   Disposición de bancas basada en la herramienta del diagrama del Parlamento de Wikipedia (<a href="https://github.com/elexnuk/arches" target="_blank">Arches</a>, GPL v2).
 </div>
 
@@ -76,14 +78,18 @@ svg circle.dim{opacity:.12}
 <script>
 const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?single=true&output=csv&gid=';
 const URL_LEG=SHEET+'1658111778',URL_BLQ=SHEET+'1564269952',URL_CAM=SHEET+'1766303089';
+const URL_DIS=''; // opcional: enlace CSV publicado de la pestaña DISTRITOS (si se completa, se usan sus nombres)
 const API='https://api.argentinadatos.com/v1';
+const JUR_NOMBRES={'JUR-BA':'Buenos Aires','JUR-CABA':'Ciudad de Buenos Aires','JUR-COR':'Córdoba','JUR-RN':'Río Negro','JUR-LP':'La Pampa','JUR-CH':'Chubut','JUR-TF':'Tierra del Fuego'};
 const SECCIONES=['Primera','Segunda','Tercera','Cuarta','Quinta','Sexta','Séptima','Octava'];
+const DEP=['Calamuchita','Capital','Colón','Cruz del Eje','General Roca','General San Martín','Ischilín','Juárez Celman','Marcos Juárez','Minas','Pocho','Presidente Roque Sáenz Peña','Punilla','Río Cuarto','Río Primero','Río Seco','Río Segundo','San Alberto','San Javier','San Justo','Santa María','Sobremonte','Tercero Arriba','Totoral','Tulumba','Unión'];
+const CIR=['Alto Valle Centro','Alto Valle Este','Alto Valle Oeste','Línea Sur','Valle Inferior','Valle Medio','Zona Andina','Zona Atlántica'];
 const GRIS='#9e9e9e';
 const REGLAS=[['libertad avanza','#9c27b0'],['union por la patria','#2196f3'],['justicialista','#2196f3'],['provincias unidas','#fa9708'],['=pro','#ffeb3b'],['frente pro','#ffeb3b'],['innovacion federal','#753d3d'],['union civica radical','#f44336'],['=ucr','#f44336'],['izquierda','#302929'],['elijo catamarca','#020038'],['independencia','#0000ff'],['encuentro federal','#003399'],['coalicion civica','#70bd42'],['=mid','#02989f'],['produccion y trabajo','#929292'],['conviccion federal','#64aedc'],['encuentro misionero','#4caf50'],['frente civico','#d33e44'],['justicia social federal','#1d889e'],['movere','#73b325'],['despierta chubut','#fa9708'],['neuquinidad','#8cdb64'],['primero los salte','#98262b']];
 const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 function colorBloque(nombre){const n=norm(nombre);for(const [k,c] of REGLAS){if(k[0]==='='?n===k.slice(1):n.includes(k))return c}return GRIS}
 
-let CAMS=[],cache={},camActiva=null,bloqueSel=null,sheetData=null;
+let JURS=[],cache={},jurActiva=null,camActiva=null,bloqueSel=null,sheetData=null,disNombres={};
 
 function parseCSV(txt){
   const rows=[];let row=[],cur='',q=false;
@@ -99,7 +105,16 @@ function parseCSV(txt){
   const h=rows.shift().map(s=>s.trim());
   return rows.filter(r=>r.length>1&&r[0].trim()).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])));
 }
-const nombreSeccion=id=>{const m=/S(\d)$/.exec(id||'');return m?SECCIONES[+m[1]-1]:'—'};
+function nombreDistrito(id){
+  if(disNombres[id])return disNombres[id];
+  let m;
+  if(m=/-S(\d)$/.exec(id))return 'Sección '+SECCIONES[+m[1]-1];
+  if(/-UNICO$/.test(id))return 'Distrito único';
+  if(/-POB$/.test(id))return 'Representación poblacional';
+  if(m=/^DIS-COR-D(\d+)$/.exec(id))return 'Dpto. '+DEP[+m[1]-1];
+  if(m=/^DIS-RN-C(\d+)$/.exec(id))return 'Circuito '+CIR[+m[1]-1];
+  return id||'—';
+}
 const yr=s=>s?new Date(s).getFullYear():'';
 const toD=s=>s?new Date(s):null;
 const hoy=new Date();
@@ -108,22 +123,24 @@ async function cargarSheet(){
   if(sheetData)return sheetData;
   const [a,b,c]=await Promise.all([URL_LEG,URL_BLQ,URL_CAM].map(u=>fetch(u).then(r=>{if(!r.ok)throw new Error('Planilla '+r.status);return r.text()})));
   sheetData={leg:parseCSV(a),blq:parseCSV(b),cam:parseCSV(c).filter(c=>c.camara_id&&c.total_bancas)};
+  if(URL_DIS){try{const t=await fetch(URL_DIS).then(r=>r.text());parseCSV(t).forEach(d=>{if(d.distrito_id)disNombres[d.distrito_id]=d.nombre_distrito})}catch(e){}}
   return sheetData;
 }
 
-/* Cada cámara devuelve: {titulo,total,meta,filtroLabel,leg:[{display,bloqueId,bloqueNombre,color,filtro,filtroNombre,lineas:[...],cargo}]} */
 async function datosSheet(camId){
   const d=await cargarSheet();
   const cam=d.cam.find(c=>c.camara_id===camId);
   const bl=Object.fromEntries(d.blq.filter(b=>b.camara_id===camId).map(b=>[b.bloque_id,b]));
   const leg=d.leg.filter(l=>l.camara_id===camId&&l.estado_mandato==='Vigente').map(l=>{
-    const b=bl[l.bloque_id];const mand=(l.anio_inicio_mandato&&l.anio_fin_mandato)?`${l.anio_inicio_mandato}–${l.anio_fin_mandato}`:'—';
+    const b=bl[l.bloque_id];
+    const mand=(l.anio_inicio_mandato&&l.anio_fin_mandato)?`${l.anio_inicio_mandato}–${l.anio_fin_mandato}`:'';
+    const dn=nombreDistrito(l.distrito_id);
     return {display:`${l.apellido}, ${l.nombre}`,sort:l.apellido+' '+l.nombre,bloqueId:b?l.bloque_id:'_sb',bloqueNombre:b?b.nombre_bloque:'Sin bloque asignado',
-      color:b?((b.color_hex||'').trim()||GRIS):GRIS,filtro:(/S\d$/.exec(l.distrito_id)||[''])[0],filtroNombre:'Sección '+nombreSeccion(l.distrito_id),
-      cargo:l.cargo_autoridad,lineas:[`Sección ${nombreSeccion(l.distrito_id)} · Mandato ${mand}`+(l.distrito_origen?` · Distrito de origen: ${l.distrito_origen}`:'')]};
+      color:b?((b.color_hex||'').trim()||GRIS):GRIS,filtro:l.distrito_id,filtroNombre:dn,mand,
+      cargo:l.cargo_autoridad,lineas:[`${dn} · Mandato ${mand||'—'}`+(l.distrito_origen?` · Distrito de origen: ${l.distrito_origen}`:'')]};
   });
-  return {titulo:cam.nombre_camara,total:parseInt(cam.total_bancas)||0,renov:cam.renovacion,leg,
-    filtros:SECCIONES.map((s,i)=>['S'+(i+1),'Sección '+s])};
+  const ids=[...new Set(leg.map(l=>l.filtro))].sort();
+  return {titulo:cam.nombre_camara,total:parseInt(cam.total_bancas)||0,renov:cam.renovacion,leg,filtros:ids.map(i=>[i,nombreDistrito(i)]),filtroTodos:'Todos los distritos'};
 }
 async function datosApi(tipo){
   const url=tipo==='dip'?API+'/diputados/diputados':API+'/senado/senadores';
@@ -132,41 +149,53 @@ async function datosApi(tipo){
   let leg;
   if(tipo==='dip'){
     leg=raw.filter(d=>{const fin=toD(d.periodoMandato&&d.periodoMandato.fin),ce=toD(d.ceseFecha);return (!fin||fin>=hoy)&&!(ce&&ce<hoy)}).map(d=>{
-      const bn=(d.bloque||'').trim()||'Sin bloque';
-      return {display:`${d.apellido}, ${d.nombre}`,sort:d.apellido+' '+d.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:d.provincia,filtroNombre:d.provincia,cargo:'',
-        lineas:[`${d.provincia} · Mandato ${yr(d.periodoMandato&&d.periodoMandato.inicio)}–${yr(d.periodoMandato&&d.periodoMandato.fin)}`]};
+      const bn=(d.bloque||'').trim()||'Sin bloque';const mand=`${yr(d.periodoMandato&&d.periodoMandato.inicio)}–${yr(d.periodoMandato&&d.periodoMandato.fin)}`;
+      return {display:`${d.apellido}, ${d.nombre}`,sort:d.apellido+' '+d.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:d.provincia,filtroNombre:d.provincia,mand,cargo:'',
+        lineas:[`${d.provincia} · Mandato ${mand}`]};
     });
   }else{
     leg=raw.filter(s=>{const fin=toD((s.periodoReal&&s.periodoReal.fin)||(s.periodoLegal&&s.periodoLegal.fin));return !fin||fin>=hoy}).map(s=>{
-      const bn=(s.bloque||'').trim()||'Sin bloque';const pl=s.periodoLegal||{};
+      const bn=(s.bloque||'').trim()||'Sin bloque';const pl=s.periodoLegal||{};const mand=`${yr(pl.inicio)}–${yr(pl.fin)}`;
       const l2=[];if(s.partido)l2.push('Partido: '+s.partido);if(s.reemplazo)l2.push('Reemplazo: '+s.reemplazo);if(s.observaciones)l2.push(s.observaciones);
-      return {display:s.nombre,sort:s.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:s.provincia,filtroNombre:s.provincia,cargo:'',
-        lineas:[`${s.provincia} · Mandato ${yr(pl.inicio)}–${yr(pl.fin)}`,...l2]};
+      return {display:s.nombre,sort:s.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:s.provincia,filtroNombre:s.provincia,mand,cargo:'',
+        lineas:[`${s.provincia} · Mandato ${mand}`,...l2]};
     });
   }
   const provs=[...new Set(leg.map(l=>l.filtro))].sort((a,b)=>a.localeCompare(b,'es')).map(p=>[p,p]);
-  return {titulo:tipo==='dip'?'Cámara de Diputados de la Nación':'Senado de la Nación',total:tipo==='dip'?257:72,renov:'',leg,filtros:provs};
+  return {titulo:tipo==='dip'?'Cámara de Diputados de la Nación':'Senado de la Nación',total:tipo==='dip'?257:72,renov:'',leg,filtros:provs,filtroTodos:'Todas las provincias'};
 }
 
 async function cargar(){
   try{
     const d=await cargarSheet();
-    d.cam.forEach(c=>CAMS.push({id:c.camara_id,label:(c.tipo_camara||c.nombre_camara)+' PBA',get:()=>datosSheet(c.camara_id)}));
+    const porJ={};
+    d.cam.forEach(c=>{const j=c.jurisdiccion_id;(porJ[j]=porJ[j]||[]).push({id:c.camara_id,label:c.tipo_camara==='Unicameral'?'Legislatura':(c.tipo_camara||c.nombre_camara),get:()=>datosSheet(c.camara_id)})});
+    Object.keys(porJ).forEach(j=>JURS.push({id:j,nombre:JUR_NOMBRES[j]||j,camaras:porJ[j]}));
   }catch(e){
-    document.getElementById('estado').textContent='No se pudo leer la planilla de Buenos Aires ('+e.message+'). Se muestra solo el Congreso Nacional.';
+    document.getElementById('estado').textContent='No se pudo leer la planilla ('+e.message+'). Se muestra solo el Congreso Nacional.';
   }
-  CAMS.push({id:'nac-dip',label:'Diputados Nación',get:()=>datosApi('dip')},{id:'nac-sen',label:'Senado Nación',get:()=>datosApi('sen')});
-  const tabs=document.getElementById('tabs');
-  CAMS.forEach(c=>{const bt=document.createElement('button');bt.className='tab';bt.textContent=c.label;bt.dataset.id=c.id;bt.onclick=()=>elegir(c.id);tabs.appendChild(bt)});
-  document.getElementById('selSeccion').onchange=aplicarResaltado;
-  elegir(CAMS[0].id);
+  JURS.push({id:'NAC',nombre:'Congreso Nacional',camaras:[{id:'nac-dip',label:'Diputados',get:()=>datosApi('dip')},{id:'nac-sen',label:'Senado',get:()=>datosApi('sen')}]});
+  const sj=document.getElementById('selJur');
+  JURS.forEach(j=>{const o=document.createElement('option');o.value=j.id;o.textContent=j.nombre;sj.appendChild(o)});
+  sj.onchange=()=>elegirJur(sj.value);
+  ['selDist','selMand'].forEach(id=>document.getElementById(id).onchange=aplicarResaltado);
+  elegirJur(JURS[0].id);
+}
+
+function elegirJur(id){
+  jurActiva=JURS.find(j=>j.id===id);
+  document.getElementById('selJur').value=id;
+  const tabs=document.getElementById('tabs');tabs.innerHTML='';
+  tabs.style.display=jurActiva.camaras.length>1?'flex':'none';
+  jurActiva.camaras.forEach(c=>{const bt=document.createElement('button');bt.className='tab';bt.textContent=c.label;bt.dataset.id=c.id;bt.onclick=()=>elegir(c.id);tabs.appendChild(bt)});
+  elegir(jurActiva.camaras[0].id);
 }
 
 async function elegir(id){
   camActiva=id;bloqueSel=null;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.id===id));
   document.getElementById('titulo').textContent='Cargando…';document.getElementById('meta').textContent='';
-  const cam=CAMS.find(c=>c.id===id);
+  const cam=jurActiva.camaras.find(c=>c.id===id);
   try{
     if(!cache[id])cache[id]=await cam.get();
     if(camActiva!==id)return;
@@ -192,8 +221,12 @@ function dibujar(D){
 
   document.getElementById('titulo').textContent=D.titulo;
   document.getElementById('meta').textContent=`${total} bancas · ${cargados} legisladores vigentes`+(D.renov?` · Renovación: ${D.renov}`:'');
-  const sel=document.getElementById('selSeccion');
-  sel.innerHTML='<option value="">'+(camActiva.startsWith('nac')?'Todas las provincias':'Todas las secciones')+'</option>'+D.filtros.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
+
+  const sd=document.getElementById('selDist');
+  sd.innerHTML=`<option value="">${D.filtroTodos}</option>`+D.filtros.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
+  document.getElementById('lblDist').hidden=D.filtros.length<2;
+  const mands=[...new Set(D.leg.map(l=>l.mand).filter(Boolean))].sort();
+  document.getElementById('selMand').innerHTML='<option value="">Todos los mandatos</option>'+mands.map(m=>`<option value="${m}">${m}</option>`).join('');
 
   const pos=generarHemicicloOficial(Math.max(seats.length,1),false);
   const svg=document.getElementById('svg');svg.innerHTML='';
@@ -203,7 +236,7 @@ function dibujar(D){
     const c=document.createElementNS(ns,'circle');
     c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',p.r-0.25);
     c.setAttribute('fill',s.b?s.b.color:'#e2e8f0');c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','0.4');
-    c.dataset.bloque=s.b?s.b.id:'_vac';c.dataset.filtro=s.m?s.m.filtro:'';
+    c.dataset.bloque=s.b?s.b.id:'_vac';c.dataset.filtro=s.m?s.m.filtro:'';c.dataset.mand=s.m?s.m.mand:'';
     const mostrar=()=>info(s);c.addEventListener('mouseenter',mostrar);c.addEventListener('click',mostrar);
     svg.appendChild(c);
   });
@@ -226,10 +259,10 @@ function dibujar(D){
 }
 
 function aplicarResaltado(){
-  const f=document.getElementById('selSeccion').value;
+  const f=document.getElementById('selDist').value,m=document.getElementById('selMand').value;
   document.querySelectorAll('#svg circle').forEach(c=>{
-    const okB=!bloqueSel||c.dataset.bloque===bloqueSel;const okF=!f||c.dataset.filtro===f;
-    c.classList.toggle('dim',!(okB&&okF));
+    const ok=(!bloqueSel||c.dataset.bloque===bloqueSel)&&(!f||c.dataset.filtro===f)&&(!m||c.dataset.mand===m);
+    c.classList.toggle('dim',!ok);
   });
   document.querySelectorAll('.item').forEach(i=>i.classList.toggle('sel',i.dataset.id===bloqueSel));
 }

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hemiciclos — Base 24 · @ArgElecciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8f9fc;--surface:#fff;--border:#e2e8f0;--border2:#cbd5e1;--text:#0f172a;--muted:#64748b;--subtle:#f1f5f9;--pba:#1d4ed8;--acento:#f59e0b}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--pba);padding:18px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.header-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px}
+.header-title span{color:var(--acento)}
+.header-sub{font-size:11px;color:#93c5fd;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+.header a{margin-left:auto;color:#fff;font-size:12px;font-weight:800;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:6px;white-space:nowrap}
+.layout{max-width:1000px;margin:0 auto;padding:24px 20px 50px}
+.controles{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.tabs{display:flex;background:#e2e8f0;padding:4px;border-radius:8px}
+.tab{border:none;background:transparent;padding:9px 18px;font:800 13px 'Inter',sans-serif;border-radius:6px;cursor:pointer;text-transform:uppercase;color:var(--text)}
+.tab.active{background:#1e3a8a;color:#fff}
+select{font:600 13px 'Inter',sans-serif;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;background:#fff;color:var(--text)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 4px 6px rgba(0,0,0,.05)}
+.titulo{font-size:15px;font-weight:800;margin-bottom:4px}
+.meta{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px}
+svg{width:100%;max-width:760px;display:block;margin:0 auto}
+svg circle{transition:opacity .12s}
+svg circle.dim{opacity:.12}
+.centro-num{font:900 26px 'Inter',sans-serif;fill:var(--text);text-anchor:middle}
+.centro-lbl{font:700 7px 'Inter',sans-serif;fill:var(--muted);text-anchor:middle}
+.info{min-height:64px;margin-top:10px;padding:12px 14px;border-radius:8px;background:var(--subtle);border-left:5px solid var(--border2);font-size:13px;line-height:1.5}
+.info b{font-size:15px}
+.info .vacio{color:var(--muted)}
+.leyenda{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-top:16px}
+.item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:var(--subtle);border-left:5px solid #9e9e9e;cursor:pointer;font-size:13px;font-weight:700}
+.item.sel{outline:2px solid var(--text)}
+.item .n{margin-left:auto;font-weight:900;font-size:16px}
+.item .p{color:var(--muted);font-weight:600;font-size:11px;min-width:42px;text-align:right}
+.estado{font-size:12px;color:var(--muted);margin-top:12px}
+.footer{text-align:center;padding:16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);line-height:1.6}
+.footer a{color:var(--pba);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">Base <span>24</span> · Hemiciclos</div>
+    <div class="header-sub">Provincia de Buenos Aires · @ArgElecciones</div>
+  </div>
+  <a href="index.html">← Toolbox</a>
+</div>
+
+<div class="layout">
+  <div class="controles">
+    <div class="tabs" id="tabs"></div>
+    <select id="selSeccion"><option value="">Todas las secciones</option></select>
+  </div>
+  <div class="card">
+    <div class="titulo" id="titulo">Cargando…</div>
+    <div class="meta" id="meta"></div>
+    <svg id="svg" viewBox="0 0 360 190"></svg>
+    <div class="info" id="info"><span class="vacio">Pasá el mouse (o tocá) una banca para ver el legislador.</span></div>
+    <div class="leyenda" id="leyenda"></div>
+    <div class="estado" id="estado"></div>
+  </div>
+</div>
+
+<div class="footer">
+  Datos: planilla Base 24 (@ArgElecciones). Solo mandatos vigentes. Sección = sección electoral por la que fue electo.<br>
+  Disposición de bancas basada en la herramienta del diagrama del Parlamento de Wikipedia (<a href="https://github.com/elexnuk/arches" target="_blank">Arches</a>, GPL v2).
+</div>
+
+<script src="arches.js"></script>
+<script>
+const URL_LEG='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1658111778&single=true&output=csv';
+const URL_BLQ='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1564269952&single=true&output=csv';
+const URL_CAM=URL_BLQ.replace('1564269952','1766303089');
+const SECCIONES=['Primera','Segunda','Tercera','Cuarta','Quinta','Sexta','Séptima','Octava'];
+const GRIS='#9e9e9e';
+let LEG=[],BLQ=[],CAM=[],camaraActiva=null,bloqueSel=null;
+
+function parseCSV(txt){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(q){ if(c==='"'){ if(txt[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(cur);cur='';}
+    else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+    else if(c!=='\r') cur+=c;
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  const h=rows.shift().map(s=>s.trim());
+  return rows.filter(r=>r.length>1&&r[0].trim()).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])));
+}
+const nombreSeccion=id=>{const m=/S(\d)$/.exec(id||'');return m?SECCIONES[+m[1]-1]:'—'};
+
+async function cargar(){
+  try{
+    const [a,b,c]=await Promise.all([URL_LEG,URL_BLQ,URL_CAM].map(u=>fetch(u).then(r=>{if(!r.ok)throw new Error(r.status);return r.text()})));
+    LEG=parseCSV(a);BLQ=parseCSV(b);CAM=parseCSV(c);
+    CAM=CAM.filter(c=>c.camara_id&&c.total_bancas);
+    const tabs=document.getElementById('tabs');
+    CAM.forEach(c=>{
+      const bt=document.createElement('button');
+      bt.className='tab';bt.textContent=c.tipo_camara||c.nombre_camara;bt.dataset.id=c.camara_id;
+      bt.onclick=()=>elegirCamara(c.camara_id);tabs.appendChild(bt);
+    });
+    const sel=document.getElementById('selSeccion');
+    SECCIONES.forEach((s,i)=>{const o=document.createElement('option');o.value='S'+(i+1);o.textContent='Sección '+s;sel.appendChild(o)});
+    sel.onchange=aplicarResaltado;
+    elegirCamara(CAM[0].camara_id);
+  }catch(e){
+    document.getElementById('titulo').textContent='No se pudieron cargar los datos.';
+    document.getElementById('meta').textContent='Revisá que las pestañas sigan publicadas en la web. ('+e.message+')';
+  }
+}
+
+function elegirCamara(id){
+  camaraActiva=id;bloqueSel=null;
+  document.getElementById('selSeccion').value='';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.id===id));
+  dibujar();
+}
+
+function dibujar(){
+  const cam=CAM.find(c=>c.camara_id===camaraActiva);
+  const total=parseInt(cam.total_bancas)||0;
+  const bloques=BLQ.filter(b=>b.camara_id===camaraActiva);
+  const vigentes=LEG.filter(l=>l.camara_id===camaraActiva&&l.estado_mandato==='Vigente');
+  const porBloque=id=>vigentes.filter(l=>l.bloque_id===id).sort((a,b)=>a.apellido.localeCompare(b.apellido,'es'));
+  const lista=bloques.map(b=>({...b,color:(b.color_hex||'').trim()||GRIS,miembros:porBloque(b.bloque_id)}))
+    .filter(b=>b.miembros.length).sort((a,b)=>b.miembros.length-a.miembros.length);
+  const asignados=lista.reduce((s,b)=>s+b.miembros.length,0);
+  const sinBloque=vigentes.filter(l=>!bloques.some(b=>b.bloque_id===l.bloque_id));
+  if(sinBloque.length) lista.push({bloque_id:'_sb',nombre_bloque:'Sin bloque asignado',color:GRIS,miembros:sinBloque});
+  const seats=[];
+  lista.forEach(b=>b.miembros.forEach(m=>seats.push({m,b})));
+  const vacantes=Math.max(0,total-seats.length);
+  for(let i=0;i<vacantes;i++) seats.push({m:null,b:null});
+
+  document.getElementById('titulo').textContent=cam.nombre_camara;
+  document.getElementById('meta').textContent=`${total} bancas · ${seats.length-vacantes} legisladores vigentes`+(cam.renovacion?` · Renovación: ${cam.renovacion}`:'');
+
+  const pos=generarHemicicloOficial(Math.max(seats.length,1),false);
+  const svg=document.getElementById('svg');svg.innerHTML='';
+  const ns='http://www.w3.org/2000/svg';
+  pos.forEach((p,i)=>{
+    const s=seats[i];if(!s)return;
+    const c=document.createElementNS(ns,'circle');
+    c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',p.r-0.25);
+    c.setAttribute('fill',s.b?s.b.color:'#e2e8f0');
+    c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','0.4');
+    c.dataset.bloque=s.b?s.b.bloque_id:'_vac';
+    c.dataset.seccion=s.m?(/S\d$/.exec(s.m.distrito_id)||[''])[0]:'';
+    const mostrar=()=>info(s);
+    c.addEventListener('mouseenter',mostrar);c.addEventListener('click',mostrar);
+    svg.appendChild(c);
+  });
+  const t=document.createElementNS(ns,'text');
+  t.setAttribute('x',180);t.setAttribute('y',168);t.setAttribute('class','centro-num');t.textContent=total;svg.appendChild(t);
+  const t2=document.createElementNS(ns,'text');
+  t2.setAttribute('x',180);t2.setAttribute('y',178);t2.setAttribute('class','centro-lbl');t2.textContent='BANCAS';svg.appendChild(t2);
+
+  const ley=document.getElementById('leyenda');ley.innerHTML='';
+  lista.forEach(b=>{
+    const d=document.createElement('div');d.className='item';d.style.borderLeftColor=b.color;d.dataset.id=b.bloque_id;
+    d.innerHTML=`<span>${b.nombre_bloque}</span><span class="n">${b.miembros.length}</span><span class="p">${(b.miembros.length/total*100).toFixed(1)}%</span>`;
+    d.onclick=()=>{bloqueSel=bloqueSel===b.bloque_id?null:b.bloque_id;aplicarResaltado()};
+    ley.appendChild(d);
+  });
+  document.getElementById('estado').textContent=vacantes?`${vacantes} banca(s) sin legislador cargado en la planilla (se muestran en gris claro).`:'';
+  document.getElementById('info').innerHTML='<span class="vacio">Pasá el mouse (o tocá) una banca para ver el legislador. Tocá un bloque para resaltarlo.</span>';
+  aplicarResaltado();
+}
+
+function aplicarResaltado(){
+  const sec=document.getElementById('selSeccion').value;
+  document.querySelectorAll('#svg circle').forEach(c=>{
+    const okB=!bloqueSel||c.dataset.bloque===bloqueSel;
+    const okS=!sec||c.dataset.seccion===sec;
+    c.classList.toggle('dim',!(okB&&okS));
+  });
+  document.querySelectorAll('.item').forEach(i=>i.classList.toggle('sel',i.dataset.id===bloqueSel));
+}
+
+function info(s){
+  const el=document.getElementById('info');
+  if(!s.m){el.style.borderLeftColor='#cbd5e1';el.innerHTML='<span class="vacio">Banca sin legislador cargado.</span>';return;}
+  const m=s.m;
+  el.style.borderLeftColor=s.b.color;
+  const mand=(m.anio_inicio_mandato&&m.anio_fin_mandato)?`${m.anio_inicio_mandato}–${m.anio_fin_mandato}`:'—';
+  el.innerHTML=`<b>${m.apellido}, ${m.nombre}</b>${m.cargo_autoridad?` · <i>${m.cargo_autoridad}</i>`:''}<br>
+    ${s.b.nombre_bloque}<br>
+    Sección ${nombreSeccion(m.distrito_id)} · Mandato ${mand}${m.distrito_origen?` · Distrito de origen: ${m.distrito_origen}`:''}`;
+}
+cargar();
+</script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de secciones electorales — Base 24 · @ArgElecciones</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8f9fc;--surface:#fff;--border:#e2e8f0;--border2:#cbd5e1;--text:#0f172a;--muted:#64748b;--subtle:#f1f5f9;--pba:#1d4ed8;--acento:#f59e0b}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+.header{background:var(--pba);padding:18px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.header-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px}.header-title span{color:var(--acento)}
+.header-sub{font-size:11px;color:#93c5fd;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+.header a{margin-left:auto;color:#fff;font-size:12px;font-weight:800;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:6px;white-space:nowrap}
+.layout{max-width:1100px;margin:0 auto;padding:22px 20px 50px}
+.controles{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.tabs{display:flex;background:#e2e8f0;padding:4px;border-radius:8px}
+.tab{border:none;background:transparent;padding:9px 18px;font:800 13px 'Inter',sans-serif;border-radius:6px;cursor:pointer;text-transform:uppercase;color:var(--text)}
+.tab.active{background:#1e3a8a;color:#fff}
+.lbl{display:flex;flex-direction:column;gap:3px;font:800 10px 'Inter',sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+select{font:600 13px 'Inter',sans-serif;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;background:#fff;color:var(--text)}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 4px 6px rgba(0,0,0,.05)}
+#map{height:540px;border-radius:8px;background:#eaf0f7}
+.leaflet-container{font-family:'Inter',sans-serif}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:12px}
+.chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--subtle);font-size:12px;font-weight:700;cursor:pointer;border:2px solid transparent}
+.chip.sel{border-color:var(--text)}
+.chip i{width:14px;height:14px;border-radius:4px;flex-shrink:0}
+.chip b{margin-left:auto;font-weight:900}
+h2{font-size:16px;font-weight:800;margin-bottom:2px}
+.sub{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px}
+.barra{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;font-weight:700}
+.barra .nom{width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.barra .bg{flex:1;background:var(--subtle);border-radius:4px;height:14px;overflow:hidden}
+.barra .fill{height:100%}
+.barra .n{width:24px;text-align:right;font-weight:900}
+.bloque-lista{margin-top:12px}
+.bloque-lista h3{font-size:12px;font-weight:800;padding:5px 8px;border-left:5px solid;background:var(--subtle);border-radius:0 6px 6px 0;margin-top:10px}
+.bloque-lista li{font-size:12px;list-style:none;padding:3px 8px;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;gap:8px}
+.bloque-lista li span{color:var(--muted);font-size:11px}
+.vacio{color:var(--muted);font-size:13px}
+.estado{font-size:12px;color:var(--muted);margin-top:10px}
+.footer{text-align:center;padding:16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);line-height:1.6}
+.footer a{color:var(--pba);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><div class="header-title">Base <span>24</span> · Mapa de secciones</div>
+  <div class="header-sub">Provincia de Buenos Aires · @ArgElecciones</div></div>
+  <a href="index.html">← Toolbox</a>
+</div>
+<div class="layout">
+  <div class="controles">
+    <div class="tabs" id="tabs"></div>
+    <label class="lbl">Ver<select id="selVer"></select></label>
+  </div>
+  <div class="grid">
+    <div class="card"><div id="map"></div><div class="chips" id="chips"></div><div class="estado" id="estado"></div></div>
+    <div class="card" id="panel"><h2>Elegí una sección</h2><div class="sub">Tocá el mapa o una sección de la lista para ver sus bancas por bloque y sus legisladores.</div></div>
+  </div>
+</div>
+<div class="footer">
+  Legisladores: planilla Base 24 (@ArgElecciones), solo mandatos vigentes. Secciones electorales: <a href="https://catalogo.datos.gba.gob.ar/dataset/secciones-electorales" target="_blank">Datos Abiertos PBA</a> (geometría simplificada).<br>
+  Cada sección se muestra con el color del bloque con más bancas. Las bancas son las de legisladores cargados en la planilla.
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?single=true&output=csv&gid=';
+const URL_LEG=SHEET+'1658111778',URL_BLQ=SHEET+'1564269952';
+const CAMARAS=[{id:'CAM-BA-DIP',label:'Diputados'},{id:'CAM-BA-SEN',label:'Senado'}];
+const SECC=['Primera','Segunda','Tercera','Cuarta','Quinta','Sexta','Séptima','Octava'];
+const ROMANOS={I:1,II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8};
+const NEUTRO='#cbd5e1';
+let LEG=[],BLQ=[],GEO=null,mapa,capa,camId=CAMARAS[0].id,secSel=null,D={};
+
+function parseCSV(txt){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(q){ if(c==='"'){ if(txt[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(cur);cur='';}
+    else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+    else if(c!=='\r') cur+=c;
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  const h=rows.shift().map(s=>s.trim());
+  return rows.filter(r=>r.length>1&&r[0].trim()).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])));
+}
+
+async function cargar(){
+  try{
+    const [a,b,g]=await Promise.all([fetch(URL_LEG).then(r=>r.text()),fetch(URL_BLQ).then(r=>r.text()),fetch('secciones-pba.geojson').then(r=>{if(!r.ok)throw new Error('No se encontró secciones-pba.geojson');return r.json()})]);
+    LEG=parseCSV(a);BLQ=parseCSV(b);GEO=g;
+  }catch(e){document.getElementById('estado').textContent='No se pudieron cargar los datos: '+e.message;return;}
+  const tabs=document.getElementById('tabs');
+  CAMARAS.forEach(c=>{const bt=document.createElement('button');bt.className='tab';bt.textContent=c.label;bt.dataset.id=c.id;bt.onclick=()=>{camId=c.id;secSel=null;actualizar()};tabs.appendChild(bt)});
+  document.getElementById('selVer').onchange=()=>{pintar();chips()};
+  mapa=L.map('map',{zoomSnap:.25,attributionControl:false,scrollWheelZoom:false});
+  capa=L.geoJSON(GEO,{style:()=>({weight:1.2,color:'#fff',fillOpacity:.9,fillColor:NEUTRO}),onEachFeature:(f,l)=>{
+    const n=ROMANOS[f.properties.seccion];
+    l.on({click:()=>{secSel=n;pintar();chips();detalle()},mouseover:()=>l.setStyle({weight:3,color:'#0f172a'}),mouseout:()=>capa.resetStyle?pintar():0});
+    l.bindTooltip('Sección '+SECC[n-1],{sticky:true});l._n=n;
+  }}).addTo(mapa);
+  mapa.fitBounds(capa.getBounds());
+  actualizar();
+}
+
+function calcular(){
+  const bl=Object.fromEntries(BLQ.filter(b=>b.camara_id===camId).map(b=>[b.bloque_id,b]));
+  D={};
+  for(let n=1;n<=8;n++)D[n]={total:0,por:{}};
+  LEG.filter(l=>l.camara_id===camId&&l.estado_mandato==='Vigente').forEach(l=>{
+    const m=/S(\d)$/.exec(l.distrito_id);if(!m)return;const n=+m[1];
+    const b=bl[l.bloque_id];const id=b?l.bloque_id:'_sb';
+    const e=D[n].por[id]=D[n].por[id]||{id,nombre:b?b.nombre_bloque:'Sin bloque',color:b?((b.color_hex||'').trim()||'#9e9e9e'):'#9e9e9e',miembros:[]};
+    e.miembros.push(l);D[n].total++;
+  });
+}
+function mayoritario(n){
+  const v=Object.values(D[n].por).sort((a,b)=>b.miembros.length-a.miembros.length);
+  if(!v.length)return null;
+  return {bloque:v[0],empate:v[1]&&v[1].miembros.length===v[0].miembros.length};
+}
+function estilo(n){
+  const ver=document.getElementById('selVer').value;
+  if(!D[n]||!D[n].total)return {fillColor:'#e2e8f0',fillOpacity:.6};
+  if(!ver){const m=mayoritario(n);return {fillColor:m.empate?NEUTRO:m.bloque.color,fillOpacity:.92};}
+  const e=D[n].por[ver];const share=e?e.miembros.length/D[n].total:0;
+  return {fillColor:e?e.color:'#e2e8f0',fillOpacity:e?0.2+0.8*share:.35};
+}
+function pintar(){
+  capa.eachLayer(l=>{const s=estilo(l._n);l.setStyle({...s,weight:l._n===secSel?3:1.2,color:l._n===secSel?'#0f172a':'#fff'});if(l._n===secSel)l.bringToFront()});
+}
+function chips(){
+  const el=document.getElementById('chips');el.innerHTML='';
+  for(let n=1;n<=8;n++){
+    const s=estilo(n);const d=document.createElement('div');d.className='chip'+(n===secSel?' sel':'');
+    d.innerHTML=`<i style="background:${s.fillColor};opacity:${Math.max(s.fillOpacity,.4)}"></i><span>${SECC[n-1]}</span><b>${D[n].total}</b>`;
+    d.onclick=()=>{secSel=n;pintar();chips();detalle()};el.appendChild(d);
+  }
+}
+function detalle(){
+  const p=document.getElementById('panel');
+  if(!secSel){p.innerHTML='<h2>Elegí una sección</h2><div class="sub">Tocá el mapa o una sección de la lista para ver sus bancas por bloque y sus legisladores.</div>';return;}
+  const e=D[secSel];const cam=CAMARAS.find(c=>c.id===camId).label;
+  const v=Object.values(e.por).sort((a,b)=>b.miembros.length-a.miembros.length||a.nombre.localeCompare(b.nombre,'es'));
+  if(!v.length){p.innerHTML=`<h2>Sección ${SECC[secSel-1]}</h2><div class="sub">${cam} · sin legisladores cargados</div>`;return;}
+  const max=v[0].miembros.length;
+  p.innerHTML=`<h2>Sección ${SECC[secSel-1]}</h2><div class="sub">${cam} · ${e.total} bancas cargadas</div>`+
+   v.map(b=>`<div class="barra"><span class="nom" title="${b.nombre}">${b.nombre}</span><div class="bg"><div class="fill" style="width:${b.miembros.length/max*100}%;background:${b.color}"></div></div><span class="n">${b.miembros.length}</span></div>`).join('')+
+   '<div class="bloque-lista">'+v.map(b=>`<h3 style="border-color:${b.color}">${b.nombre} (${b.miembros.length})</h3><ul>`+
+     b.miembros.sort((x,y)=>(x.apellido+x.nombre).localeCompare(y.apellido+y.nombre,'es')).map(m=>`<li>${m.apellido}, ${m.nombre}<span>${m.anio_inicio_mandato&&m.anio_fin_mandato?m.anio_inicio_mandato+'–'+m.anio_fin_mandato:''}${m.cargo_autoridad?' · '+m.cargo_autoridad:''}</span></li>`).join('')+'</ul>').join('')+'</div>';
+}
+function actualizar(){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.id===camId));
+  calcular();
+  const sv=document.getElementById('selVer');
+  const bls=Object.values(Object.assign({},...Object.values(D).map(x=>x.por)));
+  const uniq={};bls.forEach(b=>uniq[b.id]=b);
+  sv.innerHTML='<option value="">Bloque con más bancas</option>'+Object.values(uniq).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')).map(b=>`<option value="${b.id}">% de ${b.nombre}</option>`).join('');
+  const tot=Object.values(D).reduce((s,x)=>s+x.total,0);
+  document.getElementById('estado').textContent=`${tot} legisladores vigentes cargados.`;
+  pintar();chips();detalle();
+}
+cargar();
+</script>
+</body>
+</html>

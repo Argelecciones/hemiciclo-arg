@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hemiciclos — Base 24 · @ArgElecciones</title>
+<title>Base 24 — Poder Legislativo argentino · @ArgElecciones</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -12,84 +13,144 @@
 :root{--bg:#f8f9fc;--surface:#fff;--border:#e2e8f0;--border2:#cbd5e1;--text:#0f172a;--muted:#64748b;--subtle:#f1f5f9;--pba:#1d4ed8;--acento:#f59e0b}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .header{background:var(--pba);padding:18px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-.header-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px}
-.header-title span{color:var(--acento)}
+.header-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px}.header-title span{color:var(--acento)}
 .header-sub{font-size:11px;color:#93c5fd;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
 .header a{margin-left:auto;color:#fff;font-size:12px;font-weight:800;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:6px;white-space:nowrap}
-.layout{max-width:1000px;margin:0 auto;padding:24px 20px 50px}
-.controles{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
-.tabs{display:flex;background:#e2e8f0;padding:4px;border-radius:8px}.lbl{display:flex;flex-direction:column;gap:3px;font:800 10px 'Inter',sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.lbl[hidden]{display:none}.controles{align-items:flex-end}
+.layout{max-width:1100px;margin:0 auto;padding:22px 20px 50px}
+.controles{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+.tabs{display:flex;background:#e2e8f0;padding:4px;border-radius:8px}
 .tab{border:none;background:transparent;padding:9px 18px;font:800 13px 'Inter',sans-serif;border-radius:6px;cursor:pointer;text-transform:uppercase;color:var(--text)}
 .tab.active{background:#1e3a8a;color:#fff}
-select{font:600 13px 'Inter',sans-serif;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;background:#fff;color:var(--text)}
+.lbl{display:flex;flex-direction:column;gap:3px;font:800 10px 'Inter',sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.lbl[hidden]{display:none}
+select,input[type=search]{font:600 13px 'Inter',sans-serif;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;background:#fff;color:var(--text);max-width:100%}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 4px 6px rgba(0,0,0,.05)}
 .titulo{font-size:15px;font-weight:800;margin-bottom:4px}
-.meta{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px}
+.meta{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px}
+.vistawrap{display:grid;grid-template-columns:140px 1fr;gap:18px;align-items:start}
+@media(max-width:760px){.vistawrap{grid-template-columns:1fr}.vbtns{flex-direction:row!important}.vbtns button{flex:1}}
+.vbtns{display:flex;flex-direction:column;gap:8px}
+.vbtns button{border:1px solid var(--border2);background:var(--subtle);padding:11px 10px;border-radius:8px;font:800 12px 'Inter',sans-serif;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;color:var(--text);text-align:left}
+.vbtns button.active{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
+.vbtns button[hidden]{display:none}
+.vcont{min-width:0}
 svg{width:100%;max-width:760px;display:block;margin:0 auto}
-svg circle{transition:opacity .12s}
-svg circle.dim{opacity:.12}
+svg circle{transition:opacity .12s}svg circle.dim{opacity:.12}
 .centro-num{font:900 26px 'Inter',sans-serif;fill:var(--text);text-anchor:middle}
 .centro-lbl{font:700 7px 'Inter',sans-serif;fill:var(--muted);text-anchor:middle}
 .info{min-height:64px;margin-top:10px;padding:12px 14px;border-radius:8px;background:var(--subtle);border-left:5px solid var(--border2);font-size:13px;line-height:1.5}
-.info b{font-size:15px}
-.info .vacio{color:var(--muted)}
-.leyenda{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-top:16px}
+.info b{font-size:15px}.vacio{color:var(--muted)}
+.leyenda{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-top:16px}
 .item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:var(--subtle);border-left:5px solid #9e9e9e;cursor:pointer;font-size:13px;font-weight:700}
 .item.sel{outline:2px solid var(--text)}
 .item .n{margin-left:auto;font-weight:900;font-size:16px}
 .item .p{color:var(--muted);font-weight:600;font-size:11px;min-width:42px;text-align:right}
 .estado{font-size:12px;color:var(--muted);margin-top:12px}
+#map{height:460px;border-radius:8px;background:#eaf0f7}
+.leaflet-container{font-family:'Inter',sans-serif}
+.leyenda-mapa{margin-top:10px;font-size:12px;color:var(--muted);font-weight:600}
+.degradado{height:10px;border-radius:5px;margin:4px 0 2px}.deg-escala{display:flex;justify-content:space-between;font-size:11px}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:12px}
+.chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--subtle);font-size:12px;font-weight:700;cursor:pointer;border:2px solid transparent}
+.chip.sel{border-color:var(--text)}.chip i{width:14px;height:14px;border-radius:4px;flex-shrink:0}
+.chip b{margin-left:auto;font-weight:900;text-align:right}.chip small{font-weight:600;color:var(--muted);font-size:10px}
+.panel-sec{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.panel-sec h2{font-size:16px;font-weight:800;margin-bottom:2px}.sub{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px}
+.barra{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;font-weight:700}
+.barra .nom{width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.barra .bg{flex:1;background:var(--subtle);border-radius:4px;height:14px;overflow:hidden}.barra .fill{height:100%}
+.barra .n{width:24px;text-align:right;font-weight:900}.destacado{background:#fef9c3;border-radius:4px}
+.bloque-lista h3{font-size:12px;font-weight:800;padding:5px 8px;border-left:5px solid;background:var(--subtle);border-radius:0 6px 6px 0;margin-top:10px}
+.bloque-lista li{font-size:12px;list-style:none;padding:3px 8px;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;gap:8px}
+.bloque-lista li span{color:var(--muted);font-size:11px}
+.tabla-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap;user-select:none}
+th:hover{color:var(--text)}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+td.num{color:var(--muted);width:36px}
+td small{display:block;color:var(--muted);font-size:11px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
 .footer{text-align:center;padding:16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);line-height:1.6}
 .footer a{color:var(--pba);font-weight:700;text-decoration:none}
 </style>
 </head>
 <body>
 <div class="header">
-  <div>
-    <div class="header-title">Base <span>24</span> · Hemiciclos</div>
-    <div class="header-sub">Buenos Aires y Congreso Nacional · @ArgElecciones</div>
-  </div>
+  <div><div class="header-title">Base <span>24</span></div>
+  <div class="header-sub">Poder Legislativo argentino · @ArgElecciones</div></div>
   <a href="index.html">← Toolbox</a>
 </div>
-
 <div class="layout">
   <div class="controles">
     <label class="lbl">Jurisdicción<select id="selJur"></select></label>
     <div class="tabs" id="tabs"></div>
     <label class="lbl" id="lblDist">Distrito<select id="selDist"></select></label>
     <label class="lbl">Mandato<select id="selMand"></select></label>
+    <label class="lbl" id="lblVer" hidden>Colorear el mapa por<select id="selVer"></select></label>
+    <label class="lbl" id="lblBusca" hidden>Buscar<input type="search" id="busca" placeholder="Nombre o apellido"></label>
   </div>
   <div class="card">
     <div class="titulo" id="titulo">Cargando…</div>
     <div class="meta" id="meta"></div>
-    <svg id="svg" viewBox="0 0 360 190"></svg>
-    <div class="info" id="info"><span class="vacio">Pasá el mouse (o tocá) una banca para ver el legislador.</span></div>
-    <div class="leyenda" id="leyenda"></div>
-    <div class="estado" id="estado"></div>
+    <div class="vistawrap">
+      <div class="vbtns" id="vbtns">
+        <button data-v="hemi" class="active">Hemiciclo</button>
+        <button data-v="mapa" hidden>Mapa</button>
+        <button data-v="lista">Listado completo</button>
+      </div>
+      <div class="vcont">
+        <div id="vHemi">
+          <svg id="svg" viewBox="0 0 360 190"></svg>
+          <div class="info" id="info"><span class="vacio">Pasá el mouse (o tocá) una banca para ver el legislador.</span></div>
+        </div>
+        <div id="vMapa" hidden>
+          <div id="map"></div>
+          <div class="leyenda-mapa" id="leyendaMapa"></div>
+          <div class="chips" id="chips"></div>
+          <div class="panel-sec" id="panelSec"></div>
+        </div>
+        <div id="vLista" hidden>
+          <div class="estado" id="cuentaLista" style="margin:0 0 8px"></div>
+          <div class="tabla-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+        </div>
+        <div class="leyenda" id="leyenda"></div>
+        <div class="estado" id="estado"></div>
+      </div>
+    </div>
   </div>
 </div>
-
 <div class="footer">
-  Provincias: planilla Base 24 (@ArgElecciones), solo mandatos vigentes. En Buenos Aires, el distrito es la sección electoral por la que fue electo.<br>Congreso Nacional: <a href="https://argentinadatos.com/" target="_blank">ArgentinaDatos</a> (datos de HCDN y Senado), en tiempo real.<br>
-  Disposición de bancas basada en la herramienta del diagrama del Parlamento de Wikipedia (<a href="https://github.com/elexnuk/arches" target="_blank">Arches</a>, GPL v2).
+  Provincias: planilla Base 24 (@ArgElecciones), solo mandatos vigentes. Congreso Nacional: <a href="https://argentinadatos.com/" target="_blank">ArgentinaDatos</a>.<br>
+  Mapa de secciones: <a href="https://catalogo.datos.gba.gob.ar/dataset/secciones-electorales" target="_blank">Datos Abiertos PBA</a> (geometría simplificada). Disposición de bancas basada en <a href="https://github.com/elexnuk/arches" target="_blank">Arches</a> (GPL v2).
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="arches.js"></script>
 <script>
 const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?single=true&output=csv&gid=';
 const URL_LEG=SHEET+'1658111778',URL_BLQ=SHEET+'1564269952',URL_CAM=SHEET+'1766303089';
-const URL_DIS=''; // opcional: enlace CSV publicado de la pestaña DISTRITOS (si se completa, se usan sus nombres)
+const URL_DIS=''; // opcional: CSV publicado de la pestaña DISTRITOS
 const API='https://api.argentinadatos.com/v1';
 const JUR_NOMBRES={'JUR-BA':'Buenos Aires','JUR-CABA':'Ciudad de Buenos Aires','JUR-COR':'Córdoba','JUR-RN':'Río Negro','JUR-LP':'La Pampa','JUR-CH':'Chubut','JUR-TF':'Tierra del Fuego'};
 const SECCIONES=['Primera','Segunda','Tercera','Cuarta','Quinta','Sexta','Séptima','Octava'];
+const ROMANOS={I:1,II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8};
 const DEP=['Calamuchita','Capital','Colón','Cruz del Eje','General Roca','General San Martín','Ischilín','Juárez Celman','Marcos Juárez','Minas','Pocho','Presidente Roque Sáenz Peña','Punilla','Río Cuarto','Río Primero','Río Seco','Río Segundo','San Alberto','San Javier','San Justo','Santa María','Sobremonte','Tercero Arriba','Totoral','Tulumba','Unión'];
 const CIR=['Alto Valle Centro','Alto Valle Este','Alto Valle Oeste','Línea Sur','Valle Inferior','Valle Medio','Zona Andina','Zona Atlántica'];
-const GRIS='#9e9e9e';
+// Mapas disponibles por jurisdicción. key(f) debe coincidir con el final del distrito_id (ej. DIS-BA-DIP-S3 -> 'S3')
+const GEOCFG={'JUR-BA':{file:'secciones-pba.geojson',key:f=>'S'+ROMANOS[f.properties.seccion],nombre:k=>'Sección '+SECCIONES[+k.slice(1)-1]}};
+const GRIS='#9e9e9e',NEUTRO='#cbd5e1';
 const REGLAS=[['libertad avanza','#9c27b0'],['union por la patria','#2196f3'],['justicialista','#2196f3'],['provincias unidas','#fa9708'],['=pro','#ffeb3b'],['frente pro','#ffeb3b'],['innovacion federal','#753d3d'],['union civica radical','#f44336'],['=ucr','#f44336'],['izquierda','#302929'],['elijo catamarca','#020038'],['independencia','#0000ff'],['encuentro federal','#003399'],['coalicion civica','#70bd42'],['=mid','#02989f'],['produccion y trabajo','#929292'],['conviccion federal','#64aedc'],['encuentro misionero','#4caf50'],['frente civico','#d33e44'],['justicia social federal','#1d889e'],['movere','#73b325'],['despierta chubut','#fa9708'],['neuquinidad','#8cdb64'],['primero los salte','#98262b']];
 const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-function colorBloque(nombre){const n=norm(nombre);for(const [k,c] of REGLAS){if(k[0]==='='?n===k.slice(1):n.includes(k))return c}return GRIS}
+function colorBloque(n0){const n=norm(n0);for(const [k,c] of REGLAS){if(k[0]==='='?n===k.slice(1):n.includes(k))return c}return GRIS}
+const $=id=>document.getElementById(id);
+const yr=s=>s?new Date(s).getFullYear():'';
+const toD=s=>s?new Date(s):null;
+const hoy=new Date();
 
-let JURS=[],cache={},jurActiva=null,camActiva=null,bloqueSel=null,sheetData=null,disNombres={};
+let JURS=[],cache={},jurActiva=null,camActiva=null,Dat=null,vista='hemi',bloqueSel=null,sheetData=null,disNombres={};
+let mapa=null,capa=null,capaJur=null,geoCache={},secSel=null,DM={};
+let orden={col:'sort',dir:1};
 
 function parseCSV(txt){
   const rows=[];let row=[],cur='',q=false;
@@ -115,10 +176,6 @@ function nombreDistrito(id){
   if(m=/^DIS-RN-C(\d+)$/.exec(id))return 'Circuito '+CIR[+m[1]-1];
   return id||'—';
 }
-const yr=s=>s?new Date(s).getFullYear():'';
-const toD=s=>s?new Date(s):null;
-const hoy=new Date();
-
 async function cargarSheet(){
   if(sheetData)return sheetData;
   const [a,b,c]=await Promise.all([URL_LEG,URL_BLQ,URL_CAM].map(u=>fetch(u).then(r=>{if(!r.ok)throw new Error('Planilla '+r.status);return r.text()})));
@@ -126,7 +183,6 @@ async function cargarSheet(){
   if(URL_DIS){try{const t=await fetch(URL_DIS).then(r=>r.text());parseCSV(t).forEach(d=>{if(d.distrito_id)disNombres[d.distrito_id]=d.nombre_distrito})}catch(e){}}
   return sheetData;
 }
-
 async function datosSheet(camId){
   const d=await cargarSheet();
   const cam=d.cam.find(c=>c.camara_id===camId);
@@ -136,142 +192,248 @@ async function datosSheet(camId){
     const mand=(l.anio_inicio_mandato&&l.anio_fin_mandato)?`${l.anio_inicio_mandato}–${l.anio_fin_mandato}`:'';
     const dn=nombreDistrito(l.distrito_id);
     return {display:`${l.apellido}, ${l.nombre}`,sort:l.apellido+' '+l.nombre,bloqueId:b?l.bloque_id:'_sb',bloqueNombre:b?b.nombre_bloque:'Sin bloque asignado',
-      color:b?((b.color_hex||'').trim()||GRIS):GRIS,filtro:l.distrito_id,filtroNombre:dn,mand,
-      cargo:l.cargo_autoridad,lineas:[`${dn} · Mandato ${mand||'—'}`+(l.distrito_origen?` · Distrito de origen: ${l.distrito_origen}`:'')]};
+      color:b?((b.color_hex||'').trim()||GRIS):GRIS,filtro:l.distrito_id,filtroNombre:dn,mand,cargo:l.cargo_autoridad,
+      lineas:[`${dn} · Mandato ${mand||'—'}`+(l.distrito_origen?` · Distrito de origen: ${l.distrito_origen}`:'')]};
   });
   const ids=[...new Set(leg.map(l=>l.filtro))].sort();
-  return {titulo:cam.nombre_camara,total:parseInt(cam.total_bancas)||0,renov:cam.renovacion,leg,filtros:ids.map(i=>[i,nombreDistrito(i)]),filtroTodos:'Todos los distritos'};
+  return {titulo:cam.nombre_camara,total:parseInt(cam.total_bancas)||0,renov:cam.renovacion,leg,filtros:ids.map(i=>[i,nombreDistrito(i)]),filtroTodos:'Todos los distritos',colDist:'Distrito'};
 }
 async function datosApi(tipo){
-  const url=tipo==='dip'?API+'/diputados/diputados':API+'/senado/senadores';
-  const r=await fetch(url);if(!r.ok)throw new Error('ArgentinaDatos '+r.status);
-  const raw=await r.json();
-  let leg;
+  const r=await fetch(tipo==='dip'?API+'/diputados/diputados':API+'/senado/senadores');if(!r.ok)throw new Error('ArgentinaDatos '+r.status);
+  const raw=await r.json();let leg;
   if(tipo==='dip'){
     leg=raw.filter(d=>{const fin=toD(d.periodoMandato&&d.periodoMandato.fin),ce=toD(d.ceseFecha);return (!fin||fin>=hoy)&&!(ce&&ce<hoy)}).map(d=>{
       const bn=(d.bloque||'').trim()||'Sin bloque';const mand=`${yr(d.periodoMandato&&d.periodoMandato.inicio)}–${yr(d.periodoMandato&&d.periodoMandato.fin)}`;
-      return {display:`${d.apellido}, ${d.nombre}`,sort:d.apellido+' '+d.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:d.provincia,filtroNombre:d.provincia,mand,cargo:'',
-        lineas:[`${d.provincia} · Mandato ${mand}`]};
+      return {display:`${d.apellido}, ${d.nombre}`,sort:d.apellido+' '+d.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:d.provincia,filtroNombre:d.provincia,mand,cargo:'',lineas:[`${d.provincia} · Mandato ${mand}`]};
     });
   }else{
     leg=raw.filter(s=>{const fin=toD((s.periodoReal&&s.periodoReal.fin)||(s.periodoLegal&&s.periodoLegal.fin));return !fin||fin>=hoy}).map(s=>{
       const bn=(s.bloque||'').trim()||'Sin bloque';const pl=s.periodoLegal||{};const mand=`${yr(pl.inicio)}–${yr(pl.fin)}`;
       const l2=[];if(s.partido)l2.push('Partido: '+s.partido);if(s.reemplazo)l2.push('Reemplazo: '+s.reemplazo);if(s.observaciones)l2.push(s.observaciones);
-      return {display:s.nombre,sort:s.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:s.provincia,filtroNombre:s.provincia,mand,cargo:'',
-        lineas:[`${s.provincia} · Mandato ${mand}`,...l2]};
+      return {display:s.nombre,sort:s.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:s.provincia,filtroNombre:s.provincia,mand,cargo:'',lineas:[`${s.provincia} · Mandato ${mand}`,...l2]};
     });
   }
   const provs=[...new Set(leg.map(l=>l.filtro))].sort((a,b)=>a.localeCompare(b,'es')).map(p=>[p,p]);
-  return {titulo:tipo==='dip'?'Cámara de Diputados de la Nación':'Senado de la Nación',total:tipo==='dip'?257:72,renov:'',leg,filtros:provs,filtroTodos:'Todas las provincias'};
+  return {titulo:tipo==='dip'?'Cámara de Diputados de la Nación':'Senado de la Nación',total:tipo==='dip'?257:72,renov:'',leg,filtros:provs,filtroTodos:'Todas las provincias',colDist:'Provincia'};
 }
 
 async function cargar(){
   try{
-    const d=await cargarSheet();
-    const porJ={};
-    d.cam.forEach(c=>{const j=c.jurisdiccion_id;(porJ[j]=porJ[j]||[]).push({id:c.camara_id,label:c.tipo_camara==='Unicameral'?'Legislatura':(c.tipo_camara||c.nombre_camara),get:()=>datosSheet(c.camara_id)})});
+    const d=await cargarSheet();const porJ={};
+    d.cam.forEach(c=>{const j=c.jurisdiccion_id;(porJ[j]=porJ[j]||[]).push({id:c.camara_id,tipo:'sheet',label:c.tipo_camara==='Unicameral'?'Legislatura':(c.tipo_camara||c.nombre_camara),get:()=>datosSheet(c.camara_id)})});
     Object.keys(porJ).forEach(j=>JURS.push({id:j,nombre:JUR_NOMBRES[j]||j,camaras:porJ[j]}));
-  }catch(e){
-    document.getElementById('estado').textContent='No se pudo leer la planilla ('+e.message+'). Se muestra solo el Congreso Nacional.';
-  }
-  JURS.push({id:'NAC',nombre:'Congreso Nacional',camaras:[{id:'nac-dip',label:'Diputados',get:()=>datosApi('dip')},{id:'nac-sen',label:'Senado',get:()=>datosApi('sen')}]});
-  const sj=document.getElementById('selJur');
-  JURS.forEach(j=>{const o=document.createElement('option');o.value=j.id;o.textContent=j.nombre;sj.appendChild(o)});
-  sj.onchange=()=>elegirJur(sj.value);
-  ['selDist','selMand'].forEach(id=>document.getElementById(id).onchange=aplicarResaltado);
+  }catch(e){$('estado').textContent='No se pudo leer la planilla ('+e.message+'). Se muestra solo el Congreso Nacional.';}
+  JURS.push({id:'NAC',nombre:'Congreso Nacional',camaras:[{id:'nac-dip',tipo:'api',label:'Diputados',get:()=>datosApi('dip')},{id:'nac-sen',tipo:'api',label:'Senado',get:()=>datosApi('sen')}]});
+  JURS.forEach(j=>{const o=document.createElement('option');o.value=j.id;o.textContent=j.nombre;$('selJur').appendChild(o)});
+  $('selJur').onchange=()=>elegirJur($('selJur').value);
+  $('selDist').onchange=$('selMand').onchange=refrescar;
+  $('busca').oninput=renderLista;
+  $('selVer').onchange=()=>{pintarMapa();chipsMapa();leyendaMapa();detalleMapa()};
+  document.querySelectorAll('#vbtns button').forEach(b=>b.onclick=()=>setVista(b.dataset.v));
   elegirJur(JURS[0].id);
 }
-
 function elegirJur(id){
-  jurActiva=JURS.find(j=>j.id===id);
-  document.getElementById('selJur').value=id;
-  const tabs=document.getElementById('tabs');tabs.innerHTML='';
-  tabs.style.display=jurActiva.camaras.length>1?'flex':'none';
+  jurActiva=JURS.find(j=>j.id===id);$('selJur').value=id;
+  const tabs=$('tabs');tabs.innerHTML='';tabs.style.display=jurActiva.camaras.length>1?'flex':'none';
   jurActiva.camaras.forEach(c=>{const bt=document.createElement('button');bt.className='tab';bt.textContent=c.label;bt.dataset.id=c.id;bt.onclick=()=>elegir(c.id);tabs.appendChild(bt)});
   elegir(jurActiva.camaras[0].id);
 }
-
 async function elegir(id){
-  camActiva=id;bloqueSel=null;
+  camActiva=jurActiva.camaras.find(c=>c.id===id);bloqueSel=null;secSel=null;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.id===id));
-  document.getElementById('titulo').textContent='Cargando…';document.getElementById('meta').textContent='';
-  const cam=jurActiva.camaras.find(c=>c.id===id);
+  $('titulo').textContent='Cargando…';$('meta').textContent='';
   try{
-    if(!cache[id])cache[id]=await cam.get();
-    if(camActiva!==id)return;
-    dibujar(cache[id]);
+    if(!cache[id])cache[id]=await camActiva.get();
+    if(camActiva.id!==id)return;
+    Dat=cache[id];prepararDatos();
   }catch(e){
-    if(camActiva!==id)return;
-    document.getElementById('titulo').textContent='No se pudieron cargar los datos.';
-    document.getElementById('meta').textContent=e.message+' — revisá la conexión o que la fuente siga disponible.';
-    document.getElementById('svg').innerHTML='';document.getElementById('leyenda').innerHTML='';
+    if(camActiva.id!==id)return;
+    $('titulo').textContent='No se pudieron cargar los datos.';$('meta').textContent=e.message+' — revisá la conexión o que la fuente siga disponible.';
+    $('svg').innerHTML='';$('leyenda').innerHTML='';$('tbody').innerHTML='';
   }
 }
-
-function dibujar(D){
-  const total=D.total;
+function prepararDatos(){
+  const D=Dat,total=D.total;
   const grupos={};
   D.leg.forEach(l=>{(grupos[l.bloqueId]=grupos[l.bloqueId]||{id:l.bloqueId,nombre:l.bloqueNombre,color:l.color,miembros:[]}).miembros.push(l)});
-  const lista=Object.values(grupos).sort((a,b)=>b.miembros.length-a.miembros.length||a.nombre.localeCompare(b.nombre,'es'));
-  lista.forEach(b=>b.miembros.sort((x,y)=>x.sort.localeCompare(y.sort,'es')));
-  const seats=[];lista.forEach(b=>b.miembros.forEach(m=>seats.push({m,b})));
-  const cargados=seats.length;
-  const vacantes=Math.max(0,total-cargados);
-  for(let i=0;i<vacantes;i++)seats.push({m:null,b:null});
-
-  document.getElementById('titulo').textContent=D.titulo;
-  document.getElementById('meta').textContent=`${total} bancas · ${cargados} legisladores vigentes`+(D.renov?` · Renovación: ${D.renov}`:'');
-
-  const sd=document.getElementById('selDist');
-  sd.innerHTML=`<option value="">${D.filtroTodos}</option>`+D.filtros.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
-  document.getElementById('lblDist').hidden=D.filtros.length<2;
+  D.lista=Object.values(grupos).sort((a,b)=>b.miembros.length-a.miembros.length||a.nombre.localeCompare(b.nombre,'es'));
+  D.lista.forEach(b=>b.miembros.sort((x,y)=>x.sort.localeCompare(y.sort,'es')));
+  $('titulo').textContent=D.titulo;
+  $('meta').textContent=`${total} bancas · ${D.leg.length} legisladores vigentes`+(D.renov?` · Renovación: ${D.renov}`:'');
+  $('selDist').innerHTML=`<option value="">${D.filtroTodos}</option>`+D.filtros.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
   const mands=[...new Set(D.leg.map(l=>l.mand).filter(Boolean))].sort();
-  document.getElementById('selMand').innerHTML='<option value="">Todos los mandatos</option>'+mands.map(m=>`<option value="${m}">${m}</option>`).join('');
+  $('selMand').innerHTML='<option value="">Todos los mandatos</option>'+mands.map(m=>`<option value="${m}">${m}</option>`).join('');
+  $('busca').value='';
+  const hayMapa=camActiva.tipo==='sheet'&&!!GEOCFG[jurActiva.id];
+  document.querySelector('#vbtns [data-v=mapa]').hidden=!hayMapa;
+  if(vista==='mapa'&&!hayMapa)vista='hemi';
+  // leyenda de bloques
+  const ley=$('leyenda');ley.innerHTML='';
+  D.lista.forEach(b=>{
+    const d=document.createElement('div');d.className='item';d.style.borderLeftColor=b.color;d.dataset.id=b.id;
+    d.innerHTML=`<span>${b.nombre}</span><span class="n">${b.miembros.length}</span><span class="p">${(b.miembros.length/D.total*100).toFixed(1)}%</span>`;
+    d.onclick=()=>{bloqueSel=bloqueSel===b.id?null:b.id;refrescar()};ley.appendChild(d);
+  });
+  const vac=Math.max(0,total-D.leg.length);let est='';
+  if(vac)est=`${vac} banca(s) sin legislador cargado (se muestran en gris claro).`;
+  if(D.leg.length>total)est=`Atención: hay ${D.leg.length} legisladores vigentes para ${total} bancas. Revisá la fuente (posibles duplicados o reemplazos sin dar de baja).`;
+  $('estado').textContent=est;
+  setVista(vista,true);
+}
+function pasa(l){return (!bloqueSel||l.bloqueId===bloqueSel)&&(!$('selDist').value||l.filtro===$('selDist').value)&&(!$('selMand').value||l.mand===$('selMand').value)}
+function refrescar(){
+  document.querySelectorAll('.item').forEach(i=>i.classList.toggle('sel',i.dataset.id===bloqueSel));
+  if(vista==='hemi')aplicarHemi();
+  else if(vista==='lista')renderLista();
+  else if(vista==='mapa')renderMapa();
+}
+function setVista(v,forzar){
+  vista=v;
+  document.querySelectorAll('#vbtns button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+  $('vHemi').hidden=v!=='hemi';$('vMapa').hidden=v!=='mapa';$('vLista').hidden=v!=='lista';
+  $('leyenda').style.display=v==='mapa'?'none':'grid';
+  $('lblVer').hidden=v!=='mapa';$('lblBusca').hidden=v!=='lista';
+  $('lblDist').hidden=v==='mapa'||Dat.filtros.length<2;
+  if(v==='hemi')dibujarHemi();
+  else if(v==='lista')renderLista();
+  else renderMapa();
+}
 
+/* ---------- HEMICICLO ---------- */
+function dibujarHemi(){
+  const D=Dat,total=D.total;
+  const seats=[];D.lista.forEach(b=>b.miembros.forEach(m=>seats.push({m,b})));
+  const vac=Math.max(0,total-seats.length);for(let i=0;i<vac;i++)seats.push({m:null,b:null});
   const pos=generarHemicicloOficial(Math.max(seats.length,1),false);
-  const svg=document.getElementById('svg');svg.innerHTML='';
-  const ns='http://www.w3.org/2000/svg';
+  const svg=$('svg');svg.innerHTML='';const ns='http://www.w3.org/2000/svg';
   pos.forEach((p,i)=>{
     const s=seats[i];if(!s)return;
     const c=document.createElementNS(ns,'circle');
     c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',p.r-0.25);
     c.setAttribute('fill',s.b?s.b.color:'#e2e8f0');c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','0.4');
     c.dataset.bloque=s.b?s.b.id:'_vac';c.dataset.filtro=s.m?s.m.filtro:'';c.dataset.mand=s.m?s.m.mand:'';
-    const mostrar=()=>info(s);c.addEventListener('mouseenter',mostrar);c.addEventListener('click',mostrar);
+    const mostrar=()=>infoBanca(s);c.addEventListener('mouseenter',mostrar);c.addEventListener('click',mostrar);
     svg.appendChild(c);
   });
   const t=document.createElementNS(ns,'text');t.setAttribute('x',180);t.setAttribute('y',168);t.setAttribute('class','centro-num');t.textContent=total;svg.appendChild(t);
   const t2=document.createElementNS(ns,'text');t2.setAttribute('x',180);t2.setAttribute('y',178);t2.setAttribute('class','centro-lbl');t2.textContent='BANCAS';svg.appendChild(t2);
-
-  const ley=document.getElementById('leyenda');ley.innerHTML='';
-  lista.forEach(b=>{
-    const d=document.createElement('div');d.className='item';d.style.borderLeftColor=b.color;d.dataset.id=b.id;
-    d.innerHTML=`<span>${b.nombre}</span><span class="n">${b.miembros.length}</span><span class="p">${(b.miembros.length/total*100).toFixed(1)}%</span>`;
-    d.onclick=()=>{bloqueSel=bloqueSel===b.id?null:b.id;aplicarResaltado()};
-    ley.appendChild(d);
-  });
-  let est='';
-  if(vacantes)est=`${vacantes} banca(s) sin legislador cargado (se muestran en gris claro).`;
-  if(cargados>total)est=`Atención: hay ${cargados} legisladores vigentes para ${total} bancas. Revisá la fuente (posibles duplicados o reemplazos sin dar de baja).`;
-  document.getElementById('estado').textContent=est;
-  document.getElementById('info').innerHTML='<span class="vacio">Pasá el mouse (o tocá) una banca para ver el legislador. Tocá un bloque para resaltarlo.</span>';
-  aplicarResaltado();
+  $('info').innerHTML='<span class="vacio">Pasá el mouse (o tocá) una banca para ver el legislador. Tocá un bloque para resaltarlo.</span>';
+  aplicarHemi();
 }
-
-function aplicarResaltado(){
-  const f=document.getElementById('selDist').value,m=document.getElementById('selMand').value;
+function aplicarHemi(){
+  const f=$('selDist').value,m=$('selMand').value;
   document.querySelectorAll('#svg circle').forEach(c=>{
     const ok=(!bloqueSel||c.dataset.bloque===bloqueSel)&&(!f||c.dataset.filtro===f)&&(!m||c.dataset.mand===m);
     c.classList.toggle('dim',!ok);
   });
-  document.querySelectorAll('.item').forEach(i=>i.classList.toggle('sel',i.dataset.id===bloqueSel));
 }
-
-function info(s){
-  const el=document.getElementById('info');
+function infoBanca(s){
+  const el=$('info');
   if(!s.m){el.style.borderLeftColor='#cbd5e1';el.innerHTML='<span class="vacio">Banca sin legislador cargado.</span>';return;}
   const m=s.m;el.style.borderLeftColor=s.b.color;
   el.innerHTML=`<b>${m.display}</b>${m.cargo?` · <i>${m.cargo}</i>`:''}<br>${s.b.nombre}<br>${m.lineas.join('<br>')}`;
+}
+
+/* ---------- LISTADO ---------- */
+function renderLista(){
+  const D=Dat,q=norm($('busca').value);
+  const cols=[['sort','Legislador'],['bloqueNombre','Bloque'],['filtroNombre',D.colDist],['mand','Mandato']];
+  $('thead').innerHTML='<tr><th style="cursor:default">N.º</th>'+cols.map(([k,n])=>`<th data-k="${k}">${n}${orden.col===k?(orden.dir>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>';
+  document.querySelectorAll('#thead th[data-k]').forEach(th=>th.onclick=()=>{orden=orden.col===th.dataset.k?{col:th.dataset.k,dir:-orden.dir}:{col:th.dataset.k,dir:1};renderLista()});
+  let rows=D.leg.filter(l=>pasa(l)&&(!q||norm(l.display).includes(q)));
+  const k=orden.col;
+  rows.sort((a,b)=>String(a[k]||'').localeCompare(String(b[k]||''),'es',{numeric:true})*orden.dir||a.sort.localeCompare(b.sort,'es'));
+  $('tbody').innerHTML=rows.map((l,i)=>`<tr><td class="num">${i+1}</td><td><b>${l.display}</b>${l.cargo?`<small>${l.cargo}</small>`:''}</td><td><span class="dot" style="background:${l.color}"></span>${l.bloqueNombre}</td><td>${l.filtroNombre}</td><td>${l.mand||'—'}</td></tr>`).join('');
+  $('cuentaLista').textContent=`${rows.length} de ${D.leg.length} legisladores`;
+}
+
+/* ---------- MAPA ---------- */
+function keyDe(l){const m=/-([A-Z]\d+)$/.exec(l.filtro);return m?m[1]:null}
+function calcMapa(){
+  DM={};const m=$('selMand').value;
+  Dat.leg.filter(l=>!m||l.mand===m).forEach(l=>{
+    const k=keyDe(l);if(!k)return;
+    const e=DM[k]=DM[k]||{total:0,por:{}};
+    const b=e.por[l.bloqueId]=e.por[l.bloqueId]||{id:l.bloqueId,nombre:l.bloqueNombre,color:l.color,miembros:[]};
+    b.miembros.push(l);e.total++;
+  });
+}
+function mayoritario(k){
+  const v=Object.values((DM[k]||{por:{}}).por).sort((a,b)=>b.miembros.length-a.miembros.length);
+  if(!v.length)return null;return {bloque:v[0],empate:v[1]&&v[1].miembros.length===v[0].miembros.length};
+}
+const verSel=()=>$('selVer').value;
+function nombreVer(){const s=$('selVer');return s.value?s.options[s.selectedIndex].dataset.nombre:''}
+function estiloMapa(k){
+  const e=DM[k];if(!e||!e.total)return {fillColor:'#e2e8f0',fillOpacity:.6};
+  if(!verSel()){const m=mayoritario(k);return {fillColor:m.empate?NEUTRO:m.bloque.color,fillOpacity:.92}}
+  const b=e.por[verSel()];const share=b?b.miembros.length/e.total:0;
+  return {fillColor:b?b.color:'#e2e8f0',fillOpacity:b?0.2+0.8*share:.35};
+}
+function textoMapa(k){
+  const cfg=GEOCFG[jurActiva.id],e=DM[k],nom=cfg.nombre(k);
+  if(!e||!e.total)return nom+' · sin legisladores cargados';
+  if(!verSel()){const m=mayoritario(k);return m.empate?`${nom} · empate entre bloques (${e.total} bancas)`:`${nom} · ${m.bloque.nombre}: ${m.bloque.miembros.length} de ${e.total} bancas`}
+  const b=e.por[verSel()],n=b?b.miembros.length:0;
+  return `${nom} · ${nombreVer()}: ${n} de ${e.total} bancas (${Math.round(n/e.total*100)}%)`;
+}
+async function renderMapa(){
+  const cfg=GEOCFG[jurActiva.id],jid=jurActiva.id,cid=camActiva.id;
+  if(!mapa)mapa=L.map('map',{zoomSnap:.25,attributionControl:false,scrollWheelZoom:false});
+  try{
+    if(!geoCache[jid])geoCache[jid]=await fetch(cfg.file).then(r=>{if(!r.ok)throw new Error('No se encontró '+cfg.file);return r.json()});
+  }catch(e){$('leyendaMapa').textContent='No se pudo cargar el mapa: '+e.message;return}
+  if(vista!=='mapa'||camActiva.id!==cid)return;
+  if(capaJur!==jid){
+    if(capa)mapa.removeLayer(capa);
+    capa=L.geoJSON(geoCache[jid],{style:()=>({weight:1.2,color:'#fff',fillOpacity:.9,fillColor:NEUTRO}),onEachFeature:(f,l)=>{
+      const k=cfg.key(f);l._k=k;
+      l.on({click:()=>{secSel=k;pintarMapa();chipsMapa();detalleMapa()},mouseover:()=>l.setStyle({weight:3,color:'#0f172a'}),mouseout:()=>pintarMapa()});
+      l.bindTooltip(()=>textoMapa(k),{sticky:true});
+    }}).addTo(mapa);
+    capaJur=jid;
+  }
+  mapa.invalidateSize();mapa.fitBounds(capa.getBounds());
+  calcMapa();
+  const uniq={};Object.values(DM).forEach(e=>Object.values(e.por).forEach(b=>uniq[b.id]=b));
+  const prev=verSel();
+  $('selVer').innerHTML='<option value="">Bloque con más bancas en cada sección</option>'+Object.values(uniq).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')).map(b=>`<option value="${b.id}" data-nombre="${b.nombre}">Porcentaje de: ${b.nombre}</option>`).join('');
+  if(prev&&uniq[prev])$('selVer').value=prev;
+  pintarMapa();chipsMapa();leyendaMapa();detalleMapa();
+}
+function pintarMapa(){
+  if(!capa)return;
+  capa.eachLayer(l=>{l.setStyle({...estiloMapa(l._k),weight:l._k===secSel?3:1.2,color:l._k===secSel?'#0f172a':'#fff'});if(l._k===secSel)l.bringToFront()});
+}
+function leyendaMapa(){
+  const el=$('leyendaMapa');
+  if(!verSel()){el.textContent='Cada zona tiene el color del bloque que más bancas tiene en ella (gris = empate).';return}
+  let c='#9e9e9e';Object.values(DM).forEach(e=>{if(e.por[verSel()])c=e.por[verSel()].color});
+  el.innerHTML=`Porcentaje de las bancas de cada zona que tiene <b>${nombreVer()}</b>:<div class="degradado" style="background:linear-gradient(90deg,${c}33,${c})"></div><div class="deg-escala"><span>0%</span><span>100%</span></div>`;
+}
+function chipsMapa(){
+  const cfg=GEOCFG[jurActiva.id],el=$('chips');el.innerHTML='';
+  const keys=[];capa.eachLayer(l=>keys.push(l._k));keys.sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
+  keys.forEach(k=>{
+    const s=estiloMapa(k),e=DM[k]||{total:0,por:{}};
+    const d=document.createElement('div');d.className='chip'+(k===secSel?' sel':'');
+    let dato=`${e.total}`;
+    if(verSel()&&e.total){const n=(e.por[verSel()]||{miembros:[]}).miembros.length;dato=`${Math.round(n/e.total*100)}%<br><small>${n} de ${e.total}</small>`}
+    d.innerHTML=`<i style="background:${s.fillColor};opacity:${Math.max(s.fillOpacity,.4)}"></i><span>${cfg.nombre(k).replace(/^Sección /,'')}</span><b>${dato}</b>`;
+    d.onclick=()=>{secSel=k;pintarMapa();chipsMapa();detalleMapa()};el.appendChild(d);
+  });
+}
+function detalleMapa(){
+  const p=$('panelSec'),cfg=GEOCFG[jurActiva.id];
+  if(!secSel){p.innerHTML='<h2>Elegí una zona</h2><div class="sub">Tocá el mapa o la lista de arriba para ver sus bancas por bloque y sus legisladores.</div>';return}
+  const e=DM[secSel]||{total:0,por:{}};
+  const v=Object.values(e.por).sort((a,b)=>b.miembros.length-a.miembros.length||a.nombre.localeCompare(b.nombre,'es'));
+  if(!v.length){p.innerHTML=`<h2>${cfg.nombre(secSel)}</h2><div class="sub">Sin legisladores cargados</div>`;return}
+  const max=v[0].miembros.length;
+  p.innerHTML=`<h2>${cfg.nombre(secSel)}</h2><div class="sub">${e.total} bancas cargadas</div>`+
+    v.map(b=>`<div class="barra${b.id===verSel()?' destacado':''}"><span class="nom" title="${b.nombre}">${b.nombre}</span><div class="bg"><div class="fill" style="width:${b.miembros.length/max*100}%;background:${b.color}"></div></div><span class="n">${b.miembros.length}</span><span style="width:38px;text-align:right;color:#64748b;font-size:11px">${Math.round(b.miembros.length/e.total*100)}%</span></div>`).join('')+
+    '<div class="bloque-lista">'+v.map(b=>`<h3 style="border-color:${b.color}">${b.nombre} (${b.miembros.length})</h3><ul>`+
+      b.miembros.map(m=>`<li>${m.display}<span>${m.mand||''}${m.cargo?' · '+m.cargo:''}</span></li>`).join('')+'</ul>').join('')+'</div>';
 }
 cargar();
 </script>

@@ -28,7 +28,7 @@ select{font:600 13px 'Inter',sans-serif;padding:9px 12px;border:1px solid var(--
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 4px 6px rgba(0,0,0,.05)}
 #map{height:540px;border-radius:8px;background:#eaf0f7}
 .leaflet-container{font-family:'Inter',sans-serif}
-.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:12px}
+.leyenda-mapa{margin-top:10px;font-size:12px;color:var(--muted);font-weight:600}.degradado{height:10px;border-radius:5px;margin:4px 0 2px}.deg-escala{display:flex;justify-content:space-between;font-size:11px}.destacado{background:#fef9c3;border-radius:4px}.chip small{font-weight:600;color:var(--muted);font-size:10px}.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:12px}
 .chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--subtle);font-size:12px;font-weight:700;cursor:pointer;border:2px solid transparent}
 .chip.sel{border-color:var(--text)}
 .chip i{width:14px;height:14px;border-radius:4px;flex-shrink:0}
@@ -59,10 +59,10 @@ h2{font-size:16px;font-weight:800;margin-bottom:2px}
 <div class="layout">
   <div class="controles">
     <div class="tabs" id="tabs"></div>
-    <label class="lbl">Ver<select id="selVer"></select></label>
+    <label class="lbl">Colorear el mapa por<select id="selVer"></select></label>
   </div>
   <div class="grid">
-    <div class="card"><div id="map"></div><div class="chips" id="chips"></div><div class="estado" id="estado"></div></div>
+    <div class="card"><div id="map"></div><div class="leyenda-mapa" id="leyendaMapa"></div><div class="chips" id="chips"></div><div class="estado" id="estado"></div></div>
     <div class="card" id="panel"><h2>Elegí una sección</h2><div class="sub">Tocá el mapa o una sección de la lista para ver sus bancas por bloque y sus legisladores.</div></div>
   </div>
 </div>
@@ -103,12 +103,12 @@ async function cargar(){
   }catch(e){document.getElementById('estado').textContent='No se pudieron cargar los datos: '+e.message;return;}
   const tabs=document.getElementById('tabs');
   CAMARAS.forEach(c=>{const bt=document.createElement('button');bt.className='tab';bt.textContent=c.label;bt.dataset.id=c.id;bt.onclick=()=>{camId=c.id;secSel=null;actualizar()};tabs.appendChild(bt)});
-  document.getElementById('selVer').onchange=()=>{pintar();chips()};
+  document.getElementById('selVer').onchange=()=>{pintar();chips();leyendaMapa();detalle()};
   mapa=L.map('map',{zoomSnap:.25,attributionControl:false,scrollWheelZoom:false});
   capa=L.geoJSON(GEO,{style:()=>({weight:1.2,color:'#fff',fillOpacity:.9,fillColor:NEUTRO}),onEachFeature:(f,l)=>{
     const n=ROMANOS[f.properties.seccion];
     l.on({click:()=>{secSel=n;pintar();chips();detalle()},mouseover:()=>l.setStyle({weight:3,color:'#0f172a'}),mouseout:()=>capa.resetStyle?pintar():0});
-    l.bindTooltip('Sección '+SECC[n-1],{sticky:true});l._n=n;
+    l.bindTooltip(()=>texto(n),{sticky:true});l._n=n;
   }}).addTo(mapa);
   mapa.fitBounds(capa.getBounds());
   actualizar();
@@ -130,6 +130,20 @@ function mayoritario(n){
   if(!v.length)return null;
   return {bloque:v[0],empate:v[1]&&v[1].miembros.length===v[0].miembros.length};
 }
+function texto(n){
+  const ver=document.getElementById('selVer').value,t=D[n].total,nom='Sección '+SECC[n-1];
+  if(!t)return nom+' · sin legisladores cargados';
+  if(!ver){const m=mayoritario(n);return m.empate?`${nom} · empate entre bloques (${t} bancas)`:`${nom} · ${m.bloque.nombre}: ${m.bloque.miembros.length} de ${t} bancas`}
+  const e=D[n].por[ver],k=e?e.miembros.length:0;
+  return `${nom} · ${nombreVer()}: ${k} de ${t} bancas (${Math.round(k/t*100)}%)`;
+}
+function nombreVer(){const s=document.getElementById('selVer');return s.value?s.options[s.selectedIndex].dataset.nombre:''}
+function leyendaMapa(){
+  const ver=document.getElementById('selVer').value,el=document.getElementById('leyendaMapa');
+  if(!ver){el.innerHTML='Cada sección tiene el color del bloque que más bancas tiene en ella (gris = empate).';return;}
+  const c=(Object.values(D).map(x=>x.por[ver]).find(Boolean)||{color:'#9e9e9e'}).color;
+  el.innerHTML=`Porcentaje de las bancas de cada sección que tiene <b>${nombreVer()}</b>:<div class="degradado" style="background:linear-gradient(90deg,${c}33,${c})"></div><div class="deg-escala"><span>0%</span><span>100%</span></div>`;
+}
 function estilo(n){
   const ver=document.getElementById('selVer').value;
   if(!D[n]||!D[n].total)return {fillColor:'#e2e8f0',fillOpacity:.6};
@@ -144,7 +158,10 @@ function chips(){
   const el=document.getElementById('chips');el.innerHTML='';
   for(let n=1;n<=8;n++){
     const s=estilo(n);const d=document.createElement('div');d.className='chip'+(n===secSel?' sel':'');
-    d.innerHTML=`<i style="background:${s.fillColor};opacity:${Math.max(s.fillOpacity,.4)}"></i><span>${SECC[n-1]}</span><b>${D[n].total}</b>`;
+    const ver=document.getElementById('selVer').value,t=D[n].total;
+    let dato=`${t}`;
+    if(ver&&t){const k=(D[n].por[ver]||{miembros:[]}).miembros.length;dato=`${Math.round(k/t*100)}%<br><small>${k} de ${t}</small>`}
+    d.innerHTML=`<i style="background:${s.fillColor};opacity:${Math.max(s.fillOpacity,.4)}"></i><span>${SECC[n-1]}</span><b style="text-align:right">${dato}</b>`;
     d.onclick=()=>{secSel=n;pintar();chips();detalle()};el.appendChild(d);
   }
 }
@@ -154,9 +171,9 @@ function detalle(){
   const e=D[secSel];const cam=CAMARAS.find(c=>c.id===camId).label;
   const v=Object.values(e.por).sort((a,b)=>b.miembros.length-a.miembros.length||a.nombre.localeCompare(b.nombre,'es'));
   if(!v.length){p.innerHTML=`<h2>Sección ${SECC[secSel-1]}</h2><div class="sub">${cam} · sin legisladores cargados</div>`;return;}
-  const max=v[0].miembros.length;
+  const max=v[0].miembros.length;const ver=document.getElementById('selVer').value;
   p.innerHTML=`<h2>Sección ${SECC[secSel-1]}</h2><div class="sub">${cam} · ${e.total} bancas cargadas</div>`+
-   v.map(b=>`<div class="barra"><span class="nom" title="${b.nombre}">${b.nombre}</span><div class="bg"><div class="fill" style="width:${b.miembros.length/max*100}%;background:${b.color}"></div></div><span class="n">${b.miembros.length}</span></div>`).join('')+
+   v.map(b=>`<div class="barra${b.id===ver?' destacado':''}"><span class="nom" title="${b.nombre}">${b.nombre}</span><div class="bg"><div class="fill" style="width:${b.miembros.length/max*100}%;background:${b.color}"></div></div><span class="n">${b.miembros.length}</span><span style="width:38px;text-align:right;color:#64748b;font-size:11px">${Math.round(b.miembros.length/e.total*100)}%</span></div>`).join('')+
    '<div class="bloque-lista">'+v.map(b=>`<h3 style="border-color:${b.color}">${b.nombre} (${b.miembros.length})</h3><ul>`+
      b.miembros.sort((x,y)=>(x.apellido+x.nombre).localeCompare(y.apellido+y.nombre,'es')).map(m=>`<li>${m.apellido}, ${m.nombre}<span>${m.anio_inicio_mandato&&m.anio_fin_mandato?m.anio_inicio_mandato+'–'+m.anio_fin_mandato:''}${m.cargo_autoridad?' · '+m.cargo_autoridad:''}</span></li>`).join('')+'</ul>').join('')+'</div>';
 }
@@ -166,10 +183,10 @@ function actualizar(){
   const sv=document.getElementById('selVer');
   const bls=Object.values(Object.assign({},...Object.values(D).map(x=>x.por)));
   const uniq={};bls.forEach(b=>uniq[b.id]=b);
-  sv.innerHTML='<option value="">Bloque con más bancas</option>'+Object.values(uniq).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')).map(b=>`<option value="${b.id}">% de ${b.nombre}</option>`).join('');
+  sv.innerHTML='<option value="">Bloque con más bancas en cada sección</option>'+Object.values(uniq).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')).map(b=>`<option value="${b.id}" data-nombre="${b.nombre}">Porcentaje de: ${b.nombre}</option>`).join('');
   const tot=Object.values(D).reduce((s,x)=>s+x.total,0);
   document.getElementById('estado').textContent=`${tot} legisladores vigentes cargados.`;
-  pintar();chips();detalle();
+  pintar();chips();leyendaMapa();detalle();
 }
 cargar();
 </script>

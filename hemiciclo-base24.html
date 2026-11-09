@@ -47,7 +47,7 @@ svg circle.dim{opacity:.12}
 <div class="header">
   <div>
     <div class="header-title">Base <span>24</span> · Hemiciclos</div>
-    <div class="header-sub">Provincia de Buenos Aires · @ArgElecciones</div>
+    <div class="header-sub">Buenos Aires y Congreso Nacional · @ArgElecciones</div>
   </div>
   <a href="index.html">← Toolbox</a>
 </div>
@@ -55,7 +55,7 @@ svg circle.dim{opacity:.12}
 <div class="layout">
   <div class="controles">
     <div class="tabs" id="tabs"></div>
-    <select id="selSeccion"><option value="">Todas las secciones</option></select>
+    <select id="selSeccion"><option value="">Todos</option></select>
   </div>
   <div class="card">
     <div class="titulo" id="titulo">Cargando…</div>
@@ -68,18 +68,22 @@ svg circle.dim{opacity:.12}
 </div>
 
 <div class="footer">
-  Datos: planilla Base 24 (@ArgElecciones). Solo mandatos vigentes. Sección = sección electoral por la que fue electo.<br>
+  Buenos Aires: planilla Base 24 (@ArgElecciones), solo mandatos vigentes; sección = sección electoral por la que fue electo.<br>Congreso Nacional: <a href="https://argentinadatos.com/" target="_blank">ArgentinaDatos</a> (datos de HCDN y Senado), en tiempo real.<br>
   Disposición de bancas basada en la herramienta del diagrama del Parlamento de Wikipedia (<a href="https://github.com/elexnuk/arches" target="_blank">Arches</a>, GPL v2).
 </div>
 
 <script src="arches.js"></script>
 <script>
-const URL_LEG='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1658111778&single=true&output=csv';
-const URL_BLQ='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1564269952&single=true&output=csv';
-const URL_CAM=URL_BLQ.replace('1564269952','1766303089');
+const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?single=true&output=csv&gid=';
+const URL_LEG=SHEET+'1658111778',URL_BLQ=SHEET+'1564269952',URL_CAM=SHEET+'1766303089';
+const API='https://api.argentinadatos.com/v1';
 const SECCIONES=['Primera','Segunda','Tercera','Cuarta','Quinta','Sexta','Séptima','Octava'];
 const GRIS='#9e9e9e';
-let LEG=[],BLQ=[],CAM=[],camaraActiva=null,bloqueSel=null;
+const REGLAS=[['libertad avanza','#9c27b0'],['union por la patria','#2196f3'],['justicialista','#2196f3'],['provincias unidas','#fa9708'],['=pro','#ffeb3b'],['frente pro','#ffeb3b'],['innovacion federal','#753d3d'],['union civica radical','#f44336'],['=ucr','#f44336'],['izquierda','#302929'],['elijo catamarca','#020038'],['independencia','#0000ff'],['encuentro federal','#003399'],['coalicion civica','#70bd42'],['=mid','#02989f'],['produccion y trabajo','#929292'],['conviccion federal','#64aedc'],['encuentro misionero','#4caf50'],['frente civico','#d33e44'],['justicia social federal','#1d889e'],['movere','#73b325'],['despierta chubut','#fa9708'],['neuquinidad','#8cdb64'],['primero los salte','#98262b']];
+const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+function colorBloque(nombre){const n=norm(nombre);for(const [k,c] of REGLAS){if(k[0]==='='?n===k.slice(1):n.includes(k))return c}return GRIS}
+
+let CAMS=[],cache={},camActiva=null,bloqueSel=null,sheetData=null;
 
 function parseCSV(txt){
   const rows=[];let row=[],cur='',q=false;
@@ -96,53 +100,100 @@ function parseCSV(txt){
   return rows.filter(r=>r.length>1&&r[0].trim()).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])));
 }
 const nombreSeccion=id=>{const m=/S(\d)$/.exec(id||'');return m?SECCIONES[+m[1]-1]:'—'};
+const yr=s=>s?new Date(s).getFullYear():'';
+const toD=s=>s?new Date(s):null;
+const hoy=new Date();
+
+async function cargarSheet(){
+  if(sheetData)return sheetData;
+  const [a,b,c]=await Promise.all([URL_LEG,URL_BLQ,URL_CAM].map(u=>fetch(u).then(r=>{if(!r.ok)throw new Error('Planilla '+r.status);return r.text()})));
+  sheetData={leg:parseCSV(a),blq:parseCSV(b),cam:parseCSV(c).filter(c=>c.camara_id&&c.total_bancas)};
+  return sheetData;
+}
+
+/* Cada cámara devuelve: {titulo,total,meta,filtroLabel,leg:[{display,bloqueId,bloqueNombre,color,filtro,filtroNombre,lineas:[...],cargo}]} */
+async function datosSheet(camId){
+  const d=await cargarSheet();
+  const cam=d.cam.find(c=>c.camara_id===camId);
+  const bl=Object.fromEntries(d.blq.filter(b=>b.camara_id===camId).map(b=>[b.bloque_id,b]));
+  const leg=d.leg.filter(l=>l.camara_id===camId&&l.estado_mandato==='Vigente').map(l=>{
+    const b=bl[l.bloque_id];const mand=(l.anio_inicio_mandato&&l.anio_fin_mandato)?`${l.anio_inicio_mandato}–${l.anio_fin_mandato}`:'—';
+    return {display:`${l.apellido}, ${l.nombre}`,sort:l.apellido+' '+l.nombre,bloqueId:b?l.bloque_id:'_sb',bloqueNombre:b?b.nombre_bloque:'Sin bloque asignado',
+      color:b?((b.color_hex||'').trim()||GRIS):GRIS,filtro:(/S\d$/.exec(l.distrito_id)||[''])[0],filtroNombre:'Sección '+nombreSeccion(l.distrito_id),
+      cargo:l.cargo_autoridad,lineas:[`Sección ${nombreSeccion(l.distrito_id)} · Mandato ${mand}`+(l.distrito_origen?` · Distrito de origen: ${l.distrito_origen}`:'')]};
+  });
+  return {titulo:cam.nombre_camara,total:parseInt(cam.total_bancas)||0,renov:cam.renovacion,leg,
+    filtros:SECCIONES.map((s,i)=>['S'+(i+1),'Sección '+s])};
+}
+async function datosApi(tipo){
+  const url=tipo==='dip'?API+'/diputados/diputados':API+'/senado/senadores';
+  const r=await fetch(url);if(!r.ok)throw new Error('ArgentinaDatos '+r.status);
+  const raw=await r.json();
+  let leg;
+  if(tipo==='dip'){
+    leg=raw.filter(d=>{const fin=toD(d.periodoMandato&&d.periodoMandato.fin),ce=toD(d.ceseFecha);return (!fin||fin>=hoy)&&!(ce&&ce<hoy)}).map(d=>{
+      const bn=(d.bloque||'').trim()||'Sin bloque';
+      return {display:`${d.apellido}, ${d.nombre}`,sort:d.apellido+' '+d.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:d.provincia,filtroNombre:d.provincia,cargo:'',
+        lineas:[`${d.provincia} · Mandato ${yr(d.periodoMandato&&d.periodoMandato.inicio)}–${yr(d.periodoMandato&&d.periodoMandato.fin)}`]};
+    });
+  }else{
+    leg=raw.filter(s=>{const fin=toD((s.periodoReal&&s.periodoReal.fin)||(s.periodoLegal&&s.periodoLegal.fin));return !fin||fin>=hoy}).map(s=>{
+      const bn=(s.bloque||'').trim()||'Sin bloque';const pl=s.periodoLegal||{};
+      const l2=[];if(s.partido)l2.push('Partido: '+s.partido);if(s.reemplazo)l2.push('Reemplazo: '+s.reemplazo);if(s.observaciones)l2.push(s.observaciones);
+      return {display:s.nombre,sort:s.nombre,bloqueId:norm(bn),bloqueNombre:bn,color:colorBloque(bn),filtro:s.provincia,filtroNombre:s.provincia,cargo:'',
+        lineas:[`${s.provincia} · Mandato ${yr(pl.inicio)}–${yr(pl.fin)}`,...l2]};
+    });
+  }
+  const provs=[...new Set(leg.map(l=>l.filtro))].sort((a,b)=>a.localeCompare(b,'es')).map(p=>[p,p]);
+  return {titulo:tipo==='dip'?'Cámara de Diputados de la Nación':'Senado de la Nación',total:tipo==='dip'?257:72,renov:'',leg,filtros:provs};
+}
 
 async function cargar(){
   try{
-    const [a,b,c]=await Promise.all([URL_LEG,URL_BLQ,URL_CAM].map(u=>fetch(u).then(r=>{if(!r.ok)throw new Error(r.status);return r.text()})));
-    LEG=parseCSV(a);BLQ=parseCSV(b);CAM=parseCSV(c);
-    CAM=CAM.filter(c=>c.camara_id&&c.total_bancas);
-    const tabs=document.getElementById('tabs');
-    CAM.forEach(c=>{
-      const bt=document.createElement('button');
-      bt.className='tab';bt.textContent=c.tipo_camara||c.nombre_camara;bt.dataset.id=c.camara_id;
-      bt.onclick=()=>elegirCamara(c.camara_id);tabs.appendChild(bt);
-    });
-    const sel=document.getElementById('selSeccion');
-    SECCIONES.forEach((s,i)=>{const o=document.createElement('option');o.value='S'+(i+1);o.textContent='Sección '+s;sel.appendChild(o)});
-    sel.onchange=aplicarResaltado;
-    elegirCamara(CAM[0].camara_id);
+    const d=await cargarSheet();
+    d.cam.forEach(c=>CAMS.push({id:c.camara_id,label:(c.tipo_camara||c.nombre_camara)+' PBA',get:()=>datosSheet(c.camara_id)}));
   }catch(e){
+    document.getElementById('estado').textContent='No se pudo leer la planilla de Buenos Aires ('+e.message+'). Se muestra solo el Congreso Nacional.';
+  }
+  CAMS.push({id:'nac-dip',label:'Diputados Nación',get:()=>datosApi('dip')},{id:'nac-sen',label:'Senado Nación',get:()=>datosApi('sen')});
+  const tabs=document.getElementById('tabs');
+  CAMS.forEach(c=>{const bt=document.createElement('button');bt.className='tab';bt.textContent=c.label;bt.dataset.id=c.id;bt.onclick=()=>elegir(c.id);tabs.appendChild(bt)});
+  document.getElementById('selSeccion').onchange=aplicarResaltado;
+  elegir(CAMS[0].id);
+}
+
+async function elegir(id){
+  camActiva=id;bloqueSel=null;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.id===id));
+  document.getElementById('titulo').textContent='Cargando…';document.getElementById('meta').textContent='';
+  const cam=CAMS.find(c=>c.id===id);
+  try{
+    if(!cache[id])cache[id]=await cam.get();
+    if(camActiva!==id)return;
+    dibujar(cache[id]);
+  }catch(e){
+    if(camActiva!==id)return;
     document.getElementById('titulo').textContent='No se pudieron cargar los datos.';
-    document.getElementById('meta').textContent='Revisá que las pestañas sigan publicadas en la web. ('+e.message+')';
+    document.getElementById('meta').textContent=e.message+' — revisá la conexión o que la fuente siga disponible.';
+    document.getElementById('svg').innerHTML='';document.getElementById('leyenda').innerHTML='';
   }
 }
 
-function elegirCamara(id){
-  camaraActiva=id;bloqueSel=null;
-  document.getElementById('selSeccion').value='';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.id===id));
-  dibujar();
-}
+function dibujar(D){
+  const total=D.total;
+  const grupos={};
+  D.leg.forEach(l=>{(grupos[l.bloqueId]=grupos[l.bloqueId]||{id:l.bloqueId,nombre:l.bloqueNombre,color:l.color,miembros:[]}).miembros.push(l)});
+  const lista=Object.values(grupos).sort((a,b)=>b.miembros.length-a.miembros.length||a.nombre.localeCompare(b.nombre,'es'));
+  lista.forEach(b=>b.miembros.sort((x,y)=>x.sort.localeCompare(y.sort,'es')));
+  const seats=[];lista.forEach(b=>b.miembros.forEach(m=>seats.push({m,b})));
+  const cargados=seats.length;
+  const vacantes=Math.max(0,total-cargados);
+  for(let i=0;i<vacantes;i++)seats.push({m:null,b:null});
 
-function dibujar(){
-  const cam=CAM.find(c=>c.camara_id===camaraActiva);
-  const total=parseInt(cam.total_bancas)||0;
-  const bloques=BLQ.filter(b=>b.camara_id===camaraActiva);
-  const vigentes=LEG.filter(l=>l.camara_id===camaraActiva&&l.estado_mandato==='Vigente');
-  const porBloque=id=>vigentes.filter(l=>l.bloque_id===id).sort((a,b)=>a.apellido.localeCompare(b.apellido,'es'));
-  const lista=bloques.map(b=>({...b,color:(b.color_hex||'').trim()||GRIS,miembros:porBloque(b.bloque_id)}))
-    .filter(b=>b.miembros.length).sort((a,b)=>b.miembros.length-a.miembros.length);
-  const asignados=lista.reduce((s,b)=>s+b.miembros.length,0);
-  const sinBloque=vigentes.filter(l=>!bloques.some(b=>b.bloque_id===l.bloque_id));
-  if(sinBloque.length) lista.push({bloque_id:'_sb',nombre_bloque:'Sin bloque asignado',color:GRIS,miembros:sinBloque});
-  const seats=[];
-  lista.forEach(b=>b.miembros.forEach(m=>seats.push({m,b})));
-  const vacantes=Math.max(0,total-seats.length);
-  for(let i=0;i<vacantes;i++) seats.push({m:null,b:null});
-
-  document.getElementById('titulo').textContent=cam.nombre_camara;
-  document.getElementById('meta').textContent=`${total} bancas · ${seats.length-vacantes} legisladores vigentes`+(cam.renovacion?` · Renovación: ${cam.renovacion}`:'');
+  document.getElementById('titulo').textContent=D.titulo;
+  document.getElementById('meta').textContent=`${total} bancas · ${cargados} legisladores vigentes`+(D.renov?` · Renovación: ${D.renov}`:'');
+  const sel=document.getElementById('selSeccion');
+  sel.innerHTML='<option value="">'+(camActiva.startsWith('nac')?'Todas las provincias':'Todas las secciones')+'</option>'+D.filtros.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
 
   const pos=generarHemicicloOficial(Math.max(seats.length,1),false);
   const svg=document.getElementById('svg');svg.innerHTML='';
@@ -151,37 +202,34 @@ function dibujar(){
     const s=seats[i];if(!s)return;
     const c=document.createElementNS(ns,'circle');
     c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',p.r-0.25);
-    c.setAttribute('fill',s.b?s.b.color:'#e2e8f0');
-    c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','0.4');
-    c.dataset.bloque=s.b?s.b.bloque_id:'_vac';
-    c.dataset.seccion=s.m?(/S\d$/.exec(s.m.distrito_id)||[''])[0]:'';
-    const mostrar=()=>info(s);
-    c.addEventListener('mouseenter',mostrar);c.addEventListener('click',mostrar);
+    c.setAttribute('fill',s.b?s.b.color:'#e2e8f0');c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','0.4');
+    c.dataset.bloque=s.b?s.b.id:'_vac';c.dataset.filtro=s.m?s.m.filtro:'';
+    const mostrar=()=>info(s);c.addEventListener('mouseenter',mostrar);c.addEventListener('click',mostrar);
     svg.appendChild(c);
   });
-  const t=document.createElementNS(ns,'text');
-  t.setAttribute('x',180);t.setAttribute('y',168);t.setAttribute('class','centro-num');t.textContent=total;svg.appendChild(t);
-  const t2=document.createElementNS(ns,'text');
-  t2.setAttribute('x',180);t2.setAttribute('y',178);t2.setAttribute('class','centro-lbl');t2.textContent='BANCAS';svg.appendChild(t2);
+  const t=document.createElementNS(ns,'text');t.setAttribute('x',180);t.setAttribute('y',168);t.setAttribute('class','centro-num');t.textContent=total;svg.appendChild(t);
+  const t2=document.createElementNS(ns,'text');t2.setAttribute('x',180);t2.setAttribute('y',178);t2.setAttribute('class','centro-lbl');t2.textContent='BANCAS';svg.appendChild(t2);
 
   const ley=document.getElementById('leyenda');ley.innerHTML='';
   lista.forEach(b=>{
-    const d=document.createElement('div');d.className='item';d.style.borderLeftColor=b.color;d.dataset.id=b.bloque_id;
-    d.innerHTML=`<span>${b.nombre_bloque}</span><span class="n">${b.miembros.length}</span><span class="p">${(b.miembros.length/total*100).toFixed(1)}%</span>`;
-    d.onclick=()=>{bloqueSel=bloqueSel===b.bloque_id?null:b.bloque_id;aplicarResaltado()};
+    const d=document.createElement('div');d.className='item';d.style.borderLeftColor=b.color;d.dataset.id=b.id;
+    d.innerHTML=`<span>${b.nombre}</span><span class="n">${b.miembros.length}</span><span class="p">${(b.miembros.length/total*100).toFixed(1)}%</span>`;
+    d.onclick=()=>{bloqueSel=bloqueSel===b.id?null:b.id;aplicarResaltado()};
     ley.appendChild(d);
   });
-  document.getElementById('estado').textContent=vacantes?`${vacantes} banca(s) sin legislador cargado en la planilla (se muestran en gris claro).`:'';
+  let est='';
+  if(vacantes)est=`${vacantes} banca(s) sin legislador cargado (se muestran en gris claro).`;
+  if(cargados>total)est=`Atención: hay ${cargados} legisladores vigentes para ${total} bancas. Revisá la fuente (posibles duplicados o reemplazos sin dar de baja).`;
+  document.getElementById('estado').textContent=est;
   document.getElementById('info').innerHTML='<span class="vacio">Pasá el mouse (o tocá) una banca para ver el legislador. Tocá un bloque para resaltarlo.</span>';
   aplicarResaltado();
 }
 
 function aplicarResaltado(){
-  const sec=document.getElementById('selSeccion').value;
+  const f=document.getElementById('selSeccion').value;
   document.querySelectorAll('#svg circle').forEach(c=>{
-    const okB=!bloqueSel||c.dataset.bloque===bloqueSel;
-    const okS=!sec||c.dataset.seccion===sec;
-    c.classList.toggle('dim',!(okB&&okS));
+    const okB=!bloqueSel||c.dataset.bloque===bloqueSel;const okF=!f||c.dataset.filtro===f;
+    c.classList.toggle('dim',!(okB&&okF));
   });
   document.querySelectorAll('.item').forEach(i=>i.classList.toggle('sel',i.dataset.id===bloqueSel));
 }
@@ -189,12 +237,8 @@ function aplicarResaltado(){
 function info(s){
   const el=document.getElementById('info');
   if(!s.m){el.style.borderLeftColor='#cbd5e1';el.innerHTML='<span class="vacio">Banca sin legislador cargado.</span>';return;}
-  const m=s.m;
-  el.style.borderLeftColor=s.b.color;
-  const mand=(m.anio_inicio_mandato&&m.anio_fin_mandato)?`${m.anio_inicio_mandato}–${m.anio_fin_mandato}`:'—';
-  el.innerHTML=`<b>${m.apellido}, ${m.nombre}</b>${m.cargo_autoridad?` · <i>${m.cargo_autoridad}</i>`:''}<br>
-    ${s.b.nombre_bloque}<br>
-    Sección ${nombreSeccion(m.distrito_id)} · Mandato ${mand}${m.distrito_origen?` · Distrito de origen: ${m.distrito_origen}`:''}`;
+  const m=s.m;el.style.borderLeftColor=s.b.color;
+  el.innerHTML=`<b>${m.display}</b>${m.cargo?` · <i>${m.cargo}</i>`:''}<br>${s.b.nombre}<br>${m.lineas.join('<br>')}`;
 }
 cargar();
 </script>

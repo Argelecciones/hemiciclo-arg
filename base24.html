@@ -144,6 +144,7 @@ const GEOCFG={'JUR-BA':{file:'secciones-pba.geojson',key:f=>'S'+ROMANOS[f.proper
 'JUR-COR':{file:'departamentos-cordoba.geojson',key:f=>f.properties.key,nombre:k=>'Dpto. '+DEP[+k.slice(1)-1]},
 'JUR-SJ':{file:'departamentos-san-juan.geojson',key:f=>f.properties.key,nombre:k=>'Dpto. '+DIS_FIJOS['DIS-SJ-'+k]},
 'JUR-TUC':{file:'secciones-tucuman.geojson',key:f=>f.properties.key,nombre:k=>DIS_FIJOS['DIS-TUC-'+k]}};
+GEOCFG['JUR-ER']={file:'departamentos-entre-rios.geojson',camaras:['CAM-ER-SEN'],key:f=>f.properties.key,nombre:k=>'Dpto. '+DIS_FIJOS['DIS-ER-SEN-'+k]};
 const GRIS='#9e9e9e',NEUTRO='#cbd5e1';
 const REGLAS=[['libertad avanza','#9c27b0'],['union por la patria','#2196f3'],['justicialista','#2196f3'],['provincias unidas','#fa9708'],['=pro','#ffeb3b'],['frente pro','#ffeb3b'],['innovacion federal','#753d3d'],['union civica radical','#f44336'],['=ucr','#f44336'],['izquierda','#302929'],['elijo catamarca','#020038'],['independencia','#0000ff'],['encuentro federal','#003399'],['coalicion civica','#70bd42'],['=mid','#02989f'],['produccion y trabajo','#929292'],['conviccion federal','#64aedc'],['encuentro misionero','#4caf50'],['frente civico','#d33e44'],['justicia social federal','#1d889e'],['movere','#73b325'],['despierta chubut','#fa9708'],['neuquinidad','#8cdb64'],['primero los salte','#98262b']];
 const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
@@ -270,7 +271,8 @@ function prepararDatos(){
   const mands=[...new Set(D.leg.map(l=>l.mand).filter(Boolean))].sort();
   $('selMand').innerHTML='<option value="">Todos los mandatos</option>'+mands.map(m=>`<option value="${m}">${m}</option>`).join('');
   $('busca').value='';
-  const hayMapa=camActiva.tipo==='sheet'&&!!GEOCFG[jurActiva.id];
+  const gc=GEOCFG[jurActiva.id];
+  const hayMapa=camActiva.tipo==='sheet'&&!!gc&&(!gc.camaras||gc.camaras.includes(camActiva.id));
   document.querySelector('#vbtns [data-v=mapa]').hidden=!hayMapa;
   if(vista==='mapa'&&!hayMapa)vista='hemi';
   // leyenda de bloques

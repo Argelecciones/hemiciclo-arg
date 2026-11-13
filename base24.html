@@ -145,6 +145,7 @@ const GEOCFG={'JUR-BA':{file:'secciones-pba.geojson',key:f=>'S'+ROMANOS[f.proper
 'JUR-SJ':{file:'departamentos-san-juan.geojson',key:f=>f.properties.key,nombre:k=>'Dpto. '+DIS_FIJOS['DIS-SJ-'+k]},
 'JUR-TUC':{file:'secciones-tucuman.geojson',key:f=>f.properties.key,nombre:k=>DIS_FIJOS['DIS-TUC-'+k]}};
 GEOCFG['JUR-ER']={file:'departamentos-entre-rios.geojson',camaras:['CAM-ER-SEN'],key:f=>f.properties.key,nombre:k=>'Dpto. '+DIS_FIJOS['DIS-ER-SEN-'+k]};
+  const HEMI_DENSO_HASTA=100;
 const GRIS='#9e9e9e',NEUTRO='#cbd5e1';
 const REGLAS=[['libertad avanza','#9c27b0'],['union por la patria','#2196f3'],['justicialista','#2196f3'],['provincias unidas','#fa9708'],['=pro','#ffeb3b'],['frente pro','#ffeb3b'],['innovacion federal','#753d3d'],['union civica radical','#f44336'],['=ucr','#f44336'],['izquierda','#302929'],['elijo catamarca','#020038'],['independencia','#0000ff'],['encuentro federal','#003399'],['coalicion civica','#70bd42'],['=mid','#02989f'],['produccion y trabajo','#929292'],['conviccion federal','#64aedc'],['encuentro misionero','#4caf50'],['frente civico','#d33e44'],['justicia social federal','#1d889e'],['movere','#73b325'],['despierta chubut','#fa9708'],['neuquinidad','#8cdb64'],['primero los salte','#98262b']];
 const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
@@ -312,7 +313,7 @@ function dibujarHemi(){
   const D=Dat,total=D.total;
   const seats=[];D.lista.forEach(b=>b.miembros.forEach(m=>seats.push({m,b})));
   const vac=Math.max(0,total-seats.length);for(let i=0;i<vac;i++)seats.push({m:null,b:null});
-  const pos=generarHemicicloOficial(Math.max(seats.length,1),false);
+  const pos=generarHemicicloOficial(Math.max(seats.length,1),seats.length<=HEMI_DENSO_HASTA);
   const svg=$('svg');svg.innerHTML='';const ns='http://www.w3.org/2000/svg';
   pos.forEach((p,i)=>{
     const s=seats[i];if(!s)return;

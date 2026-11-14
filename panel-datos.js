@@ -2,9 +2,9 @@
    Se carga desde base24.html con: <script src="panel-datos.js"></script>
    Completar los 3 enlaces CSV publicados (Archivo > Compartir > Publicar en la Web). Si están vacíos, el botón no aparece. */
 const DATOS_URLS={
-  rem:'',   // pestaña REMUNERACIONES
-  pre:'',   // pestaña PRESUPUESTOS
-  fue:''    // pestaña FUENTES
+  rem:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=479450843&single=true&output=csv',   // pestaña REMUNERACIONES
+  pre:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1972494966&single=true&output=csv',   // pestaña PRESUPUESTOS
+  fue:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1405292426&single=true&output=csv'    // pestaña FUENTES
 };
 (function(){
   if(!DATOS_URLS.rem&&!DATOS_URLS.pre)return;

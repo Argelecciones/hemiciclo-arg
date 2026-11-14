@@ -152,6 +152,7 @@ GEOCFG['JUR-SF']={file:'departamentos-santa-fe.geojson',camaras:['CAM-SF-SEN'],k
 GEOCFG['JUR-LR']={file:'departamentos-la-rioja.geojson',key:f=>f.properties.key,nombre:k=>'Dpto. '+nombreDistrito('DIS-LR-'+k)};
 GEOCFG['JUR-MZA']={file:'secciones-mendoza.geojson',key:f=>f.properties.key,nombre:k=>'Sección '+['Primera','Segunda','Tercera','Cuarta'][+k.slice(1)-1]};
 GEOCFG['JUR-RN']={file:'circuitos-rio-negro.geojson',key:f=>f.properties.key,nombre:k=>'Circuito '+CIR[+k.slice(1)-1],aviso:'Límites de circuitos aproximados: adaptación del mapa «Circuitos electorales de Río Negro» de Misionero~commonswiki (CC BY-SA 3.0, commons.wikimedia.org), ajustada a los departamentos del IGN. Ley O Nº 2431, art. 139.'};
+GEOCFG['JUR-SC']={file:'municipios-santa-cruz.geojson',key:f=>f.properties.key,nombre:k=>nombreDistrito('DIS-SC-'+k)};
   const HEMI_DENSO_HASTA=100;
 const GRIS='#9e9e9e',NEUTRO='#cbd5e1';
 const REGLAS=[['libertad avanza','#9c27b0'],['union por la patria','#2196f3'],['justicialista','#2196f3'],['provincias unidas','#fa9708'],['=pro','#ffeb3b'],['frente pro','#ffeb3b'],['innovacion federal','#753d3d'],['union civica radical','#f44336'],['=ucr','#f44336'],['izquierda','#302929'],['elijo catamarca','#020038'],['independencia','#0000ff'],['encuentro federal','#003399'],['coalicion civica','#70bd42'],['=mid','#02989f'],['produccion y trabajo','#929292'],['conviccion federal','#64aedc'],['encuentro misionero','#4caf50'],['frente civico','#d33e44'],['justicia social federal','#1d889e'],['movere','#73b325'],['despierta chubut','#fa9708'],['neuquinidad','#8cdb64'],['primero los salte','#98262b']];
@@ -390,6 +391,7 @@ function estiloMapa(k){
 function textoMapa(k){
   const cfg=GEOCFG[jurActiva.id],e=DM[k],nom=cfg.nombre(k);
   if(!e||!e.total)return nom+' · sin legisladores cargados';
+    if(e.total===1&&!verSel()){const b=Object.values(e.por)[0];return `${nom} · ${b.miembros[0].display} (${b.nombre})`}
   if(!verSel()){const m=mayoritario(k);return m.empate?`${nom} · empate entre bloques (${e.total} bancas)`:`${nom} · ${m.bloque.nombre}: ${m.bloque.miembros.length} de ${e.total} bancas`}
   const b=e.por[verSel()],n=b?b.miembros.length:0;
   return `${nom} · ${nombreVer()}: ${n} de ${e.total} bancas (${Math.round(n/e.total*100)}%)`;
@@ -403,7 +405,7 @@ async function renderMapa(){
   if(vista!=='mapa'||camActiva.id!==cid)return;
   if(capaJur!==jid){
     if(capa)mapa.removeLayer(capa);
-    capa=L.geoJSON(geoCache[jid],{filter:f=>f.properties.tipo!=='linea',style:()=>({weight:1.2,color:'#fff',fillOpacity:.9,fillColor:NEUTRO}),onEachFeature:(f,l)=>{
+    capa=L.geoJSON(geoCache[jid],{filter:f=>f.properties.tipo!=='linea',pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:9}),style:()=>({weight:1.2,color:'#fff',fillOpacity:.9,fillColor:NEUTRO}),onEachFeature:(f,l)=>{
       const k=cfg.key(f);l._k=k;
       l.on({click:()=>{secSel=k;pintarMapa();chipsMapa();detalleMapa()},mouseover:()=>l.setStyle({weight:3,color:'#0f172a'}),mouseout:()=>pintarMapa()});
       l.bindTooltip(()=>textoMapa(k),{sticky:true});

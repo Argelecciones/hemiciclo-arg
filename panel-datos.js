@@ -31,11 +31,12 @@ const DATOS_URLS={
   #vDatos .dt-rank .fill{height:100%;background:#94a3b8}
   #vDatos .dt-rank.sel .fill{background:var(--pba)}
   #vDatos .dt-rank .m{width:96px;text-align:right}
+    #vDatos .dt-det summary{cursor:pointer;font-size:13px;font-weight:800;color:var(--pba);margin:12px 0 6px}
   #vDatos .dt-nota{font-size:12px;color:var(--muted);font-weight:600;line-height:1.5}
   @media(max-width:560px){#vDatos .dt-rank .nom{width:40%}#vDatos .dt-rank .m{width:80px}#vDatos .dt-monto{font-size:24px}}`;
   document.head.appendChild(css);
 
-  const btn=document.createElement('button');btn.dataset.v='datos';btn.textContent='Remuneración y presupuesto';
+  const btn=document.createElement('button');btn.dataset.v='datos';btn.textContent='Costos y transparencia';
   $('vbtns').appendChild(btn);
   const panel=document.createElement('div');panel.id='vDatos';panel.hidden=true;
   $('vHemi').parentNode.insertBefore(panel,$('leyenda'));
@@ -85,10 +86,10 @@ const DATOS_URLS={
     });
     // ranking
     const rk=D.rem.map(r=>({cid:r.camara_id,v:num(r.total_comparable),f:r.fuente_id,p:r.periodo_referencia})).filter(r=>r.v!=null).sort((a,b)=>b.v-a.v);
-    if(rk.length){
+    if(rk.length&&jurActiva.id!=='NAC'){h+='<details class="dt-det"><summary>Ver ranking de remuneración</summary>';
       const max=rk[0].v,prom=rk.reduce((s,r)=>s+r.v,0)/rk.length;
       h+=`<div class="dt-nota" style="margin:14px 0 6px"><b>Ranking de remuneración</b> (${rk.length} cámaras con dato comparable, período ${esc(rk[0].p)}). Promedio simple: ${$$(prom)}. Fuente: ${fuenteHtml(D.F,rk[0].f)}</div>`;
-      rk.forEach(r=>{h+=`<div class="dt-rank${r.cid===cid?' sel':''}"><span class="nom" title="${esc(etiquetaCamara(r.cid))}">${esc(etiquetaCamara(r.cid))}</span><div class="bg"><div class="fill" style="width:${r.v/max*100}%"></div></div><span class="m">${$$(r.v)}</span></div>`});
+      rk.forEach(r=>{h+=`<div class="dt-rank${r.cid===cid?' sel':''}"><span class="nom" title="${esc(etiquetaCamara(r.cid))}">${esc(etiquetaCamara(r.cid))}</span><div class="bg"><div class="fill" style="width:${r.v/max*100}%"></div></div><span class="m">${$$(r.v)}</span></div>`});h+='</details>';
     }
     h+='</div>';
     // 2) Presupuesto

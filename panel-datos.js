@@ -4,7 +4,8 @@
 const DATOS_URLS={
   rem:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=479450843&single=true&output=csv',   // pestaña REMUNERACIONES
   pre:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1972494966&single=true&output=csv',   // pestaña PRESUPUESTOS
-  fue:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1405292426&single=true&output=csv'    // pestaña FUENTES
+  fue:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=1405292426&single=true&output=csv',
+  tra:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=313540980&single=true&output=csv' // pestaña TRANSPARENCIA
 };
 (function(){
   if(!DATOS_URLS.rem&&!DATOS_URLS.pre)return;
@@ -56,9 +57,9 @@ const DATOS_URLS={
   async function bajar(u){if(!u)return [];const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return parseCSV(await r.text())}
   async function cargarDatos(){
     if(datos)return datos;
-    const [rem,pre,fue]=await Promise.all([bajar(DATOS_URLS.rem),bajar(DATOS_URLS.pre),bajar(DATOS_URLS.fue)]);
+    const [rem,pre,fue,tra]=await Promise.all([bajar(DATOS_URLS.rem),bajar(DATOS_URLS.pre),bajar(DATOS_URLS.fue),bajar(DATOS_URLS.tra)]);
     const F={};fue.forEach(f=>{if(f.fuente_id)F[f.fuente_id]=f});
-    datos={rem,pre,F};return datos;
+    datos={rem,pre,tra,F};return datos;
   }
   const fuenteHtml=(F,id)=>{const f=F[id];if(!f)return id?esc(id):'';return f.url?`<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.nombre_fuente||id)}</a>`:esc(f.nombre_fuente||id)};
   const badge=e=>e==='Verificado en fuente oficial'?'<span class="dt-badge of">Fuente oficial</span>':e==='No disponible públicamente'?'<span class="dt-badge nd">No disponible</span>':e?`<span class="dt-badge">${esc(e.replace('Verificado en ',''))}</span>`:'';
@@ -108,7 +109,19 @@ const DATOS_URLS={
       if(ej!=null&&(vi||ap)){const b2=vi||ap;h+=`<div class="dt-sub" style="margin-top:8px">Ejecutado: ${$$(ej)} (${(ej/b2*100).toFixed(1)}% del ${vi?'vigente':'aprobado'})</div>`}
       h+=`<div class="dt-sub" style="margin-top:6px">${r.fecha_corte?'Fecha de corte: '+esc(fecha(r.fecha_corte))+' · ':''}${r.fuente_id?'Fuente: '+fuenteHtml(D.F,r.fuente_id):''}</div></div>`;
     });
-    h+='</div><div class="dt-nota">Cada monto indica su concepto, tipo (bruto o neto), período y fuente. No se comparan cifras de conceptos o períodos distintos.</div>';
+    h+='</div>';
+    if(DATOS_URLS.tra){
+      const tr=D.tra.filter(r=>r.camara_id===cid);
+      h+='<div class="dt-sec"><h3>Transparencia</h3>';
+      if(!tr.length)h+='<div class="dt-nota">Todavía no hay indicadores de transparencia cargados para esta cámara.</div>';
+      tr.forEach(r=>{
+        const v=num(r.valor);
+        const txt=v==null?esc(r.valor||'—'):(r.unidad==='ARS'?$$(v):v.toLocaleString('es-AR')+(r.unidad?' '+esc(r.unidad):''));
+        h+=`<div class="dt-card"><div class="dt-label">${esc(r.indicador)}${badge(r.estado_verificacion)}</div><div class="dt-monto" style="font-size:22px">${txt}</div><div class="dt-sub">${r.periodo_referencia?'Período: '+esc(r.periodo_referencia):''}${r.fuente_id?' · Fuente: '+fuenteHtml(D.F,r.fuente_id):''}${r.observaciones?'<br>'+esc(r.observaciones):''}</div></div>`;
+      });
+      h+='</div>';
+    }
+    h+='<div class="dt-nota">Cada monto indica su concepto, tipo (bruto o neto), período y fuente. No se comparan cifras de conceptos o períodos distintos.</div>';
     panel.innerHTML=h;
   }
 

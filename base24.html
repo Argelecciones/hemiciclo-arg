@@ -24,6 +24,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .lbl{display:flex;flex-direction:column;gap:3px;font:800 10px 'Inter',sans-serif;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .lbl[hidden]{display:none}
 select,input[type=search]{font:600 13px 'Inter',sans-serif;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;background:#fff;color:var(--text);max-width:100%}
+  #selJur option[value="NAC"]{
+  font-weight:900;
+  color:#1d4ed8;
+  background:#eff6ff;
+}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 4px 6px rgba(0,0,0,.05)}
 .titulo{font-size:15px;font-weight:800;margin-bottom:4px}
 .meta{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px}
@@ -240,8 +245,13 @@ async function cargar(){
     d.cam.forEach(c=>{const j=c.jurisdiccion_id;(porJ[j]=porJ[j]||[]).push({id:c.camara_id,tipo:'sheet',label:c.tipo_camara==='Unicameral'?'Legislatura':(c.tipo_camara||c.nombre_camara),get:()=>datosSheet(c.camara_id)})});
     Object.keys(porJ).forEach(j=>JURS.push({id:j,nombre:JUR_NOMBRES[j]||j,camaras:porJ[j]}));
   }catch(e){$('estado').textContent='No se pudo leer la planilla ('+e.message+'). Se muestra solo el Congreso Nacional.';}
-  JURS.push({id:'NAC',nombre:'Congreso Nacional',camaras:[{id:'nac-dip',tipo:'api',label:'Diputados',get:()=>datosApi('dip')},{id:'nac-sen',tipo:'api',label:'Senado',get:()=>datosApi('sen')}]});
-  JURS.forEach(j=>{const o=document.createElement('option');o.value=j.id;o.textContent=j.nombre;$('selJur').appendChild(o)});
+  JURS.unshift({id:'NAC',nombre:'Congreso Nacional',camaras:[{id:'nac-dip',tipo:'api',label:'Diputados',get:()=>datosApi('dip')},{id:'nac-sen',tipo:'api',label:'Senado',get:()=>datosApi('sen')}]});
+  JURS.forEach(j=>{
+  const o=document.createElement('option');
+  o.value=j.id;
+  o.textContent=j.id==='NAC'?'🏛 CONGRESO NACIONAL':j.nombre;
+  $('selJur').appendChild(o);
+});
   $('selJur').onchange=()=>elegirJur($('selJur').value);
   $('selDist').onchange=$('selMand').onchange=refrescar;
   $('busca').oninput=renderLista;

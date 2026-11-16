@@ -2,7 +2,7 @@
    Lee la pestaña INFO de la planilla (columnas: clave, valor) y la muestra en el encabezado.
    Se carga desde base24.html con: <script src="actualizacion.js"></script> (después de acerca.js).
    Completar INFO_URL con el enlace CSV publicado de la pestaña INFO. Si está vacío, no muestra nada. */
-const INFO_URL='';
+const INFO_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vSMtPjlivaeE_i2QnwhgHr_MU2Ik4ABF1W2K6Am0jKrTzwVE7pR7TpnGDVNMlQTtQxOaAKbRVtCSpre/pub?gid=502092396&single=true&output=csv';
 (function(){
   if(!INFO_URL)return;
   function fmt(s){

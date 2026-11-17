@@ -69,6 +69,17 @@ const DATOS_URLS={
     return c.tipo_camara==='Unicameral'?j:`${j} · ${c.tipo_camara}`;
   }
 
+  function serieHtml(g,D){
+    const filas=g.map(r=>({p:String(r.periodo_referencia),v:num(r.valor),o:r.observaciones||''})).filter(x=>x.v!=null).sort((a,b)=>a.p.localeCompare(b.p));
+    if(!filas.length)return '';
+    const max=Math.max(...filas.map(x=>x.v)),r0=g[0],unidad=r0.unidad;
+    const fv=v=>unidad==='ARS'?$$(v):v.toLocaleString('es-AR')+(unidad?' '+esc(unidad):'');
+    const par=filas.find(x=>/parcial/i.test(x.o));
+    let h=`<div class="dt-card"><div class="dt-label">${esc(r0.indicador)}${badge(r0.estado_verificacion)}</div>`;
+    filas.forEach(x=>{const p=/parcial/i.test(x.o);h+=`<div class="dt-rank"><span class="nom" style="width:64px">${esc(x.p)}${p?' *':''}</span><div class="bg"><div class="fill" style="width:${x.v/max*100}%${p?';opacity:.55':''}"></div></div><span class="m" style="width:130px">${fv(x.v)}</span></div>`});
+    h+=`<div class="dt-sub" style="margin-top:6px">${r0.fuente_id?'Fuente: '+fuenteHtml(D.F,r0.fuente_id):''}${par?'<br>* '+esc(par.o):''}</div></div>`;
+    return h;
+  }
   async function render(){
     const cid=camActiva&&camActiva.id;
     panel.innerHTML='<div class="dt-nota">Cargando datos…</div>';
@@ -111,9 +122,13 @@ const DATOS_URLS={
     });
     h+='</div>';
     if(DATOS_URLS.tra){
-      const tr=D.tra.filter(r=>r.camara_id===cid);
-      h+='<div class="dt-sec"><h3>Transparencia</h3>';
-      if(!tr.length)h+='<div class="dt-nota">Todavía no hay indicadores de transparencia cargados para esta cámara.</div>';
+      const trAll=D.tra.filter(r=>r.camara_id===cid);
+      const grupos={};trAll.forEach(r=>{(grupos[r.indicador]=grupos[r.indicador]||[]).push(r)});
+      const series=Object.values(grupos).filter(g=>new Set(g.map(r=>r.periodo_referencia)).size>=3);
+      const nomSeries=new Set(series.map(g=>g[0].indicador));
+      const tr=trAll.filter(r=>!nomSeries.has(r.indicador));
+      h+='<div class="dt-sec"><h3>Transparencia</h3>';h+=series.map(g=>serieHtml(g,D)).join('');
+      if(!tr.length&&!series.length)h+='<div class="dt-nota">Todavía no hay indicadores de transparencia cargados para esta cámara.</div>';
       tr.forEach(r=>{
         const v=num(r.valor);
         const txt=v==null?esc(r.valor||'—'):(r.unidad==='ARS'?$$(v):v.toLocaleString('es-AR')+(r.unidad?' '+esc(r.unidad):''));

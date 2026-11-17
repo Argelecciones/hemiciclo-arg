@@ -15,6 +15,7 @@
     <li><b>Legislaturas provinciales:</b> planilla propia de @ArgElecciones, armada con la información de los sitios oficiales de cada legislatura. Se actualiza manualmente.</li>
     <li><b>Congreso Nacional:</b> <a href="https://argentinadatos.com/" target="_blank" rel="noopener">ArgentinaDatos</a> (datos de la Cámara de Diputados y del Senado), leídos en el momento de abrir la página. No es una fuente oficial.</li>
     <li><b>Remuneraciones:</b> relevamiento de Ruido (medio aliado de Reverso, proyecto de Chequeado y AFP) para la Red Federal de Periodismo e Innovación, con datos de 2025 netos "de bolsillo"; la escala oficial de la Legislatura de Córdoba; y, para el Senado de la Nación, el esquema de la Res. DR 8/24 (2.500 módulos de dieta, 1.000 de gastos de representación y 500 de desarraigo) con el valor del módulo estimado por ArgentinaDatos.</li>
+    <li><b>Viajes de legisladores nacionales:</b> <a href="https://www.datacp.ar/congreso/cuanto-viajo" target="_blank" rel="noopener">DataCP</a>, con datos de la HCDN y el HCS (CC BY 4.0). Solo vuelos nacionales: Diputados hasta junio de 2026 y Senado hasta agosto de 2026. Se muestra la suma por año de todos los grupos provinciales.</li>
     <li><b>Presupuestos y transparencia:</b> sitios oficiales de cada cámara y leyes de presupuesto. Cada dato indica su fuente en el panel "Costos y transparencia".</li>
   </ul>
 
@@ -48,7 +49,7 @@
   </ul>
 
   <h3>Atribuciones</h3>
-  <p>IGN y CONAE (límites de departamentos) · Gobierno de la Provincia de Buenos Aires, Datos Abiertos · Misionero~commonswiki, Wikimedia Commons (circuitos de Río Negro) · ArgentinaDatos · Ruido, Reverso, Chequeado y AFP · Legislaturas, ministerios y portales de transparencia de cada jurisdicción · Disposición de bancas basada en <a href="https://github.com/elexnuk/arches" target="_blank" rel="noopener">Arches</a> (David Richfield, Mathis Rade, Ranjith Siji y Ambady Anand S.).</p>
+  <p>IGN y CONAE (límites de departamentos) · Gobierno de la Provincia de Buenos Aires, Datos Abiertos · Misionero~commonswiki, Wikimedia Commons (circuitos de Río Negro) · ArgentinaDatos · DataCP (CC BY 4.0) · Ruido, Reverso, Chequeado y AFP · Legislaturas, ministerios y portales de transparencia de cada jurisdicción · Disposición de bancas basada en <a href="https://github.com/elexnuk/arches" target="_blank" rel="noopener">Arches</a> (David Richfield, Mathis Rade, Ranjith Siji y Ambady Anand S.).</p>
 
   <h3>Licencias</h3>
   <ul>

@@ -1,23 +1,27 @@
-# 🏛️ Generador de Hemiciclos Legislativos - Argelecciones
+# Base 24
 
-Herramienta interactiva nativa para la visualización y diseño de parlamentos, cámaras de diputados y senados, optimizada para la creación de placas de datos electorales.
+Herramienta de consulta y visualización del Poder Legislativo argentino: las 24 jurisdicciones (23 provincias y la Ciudad de Buenos Aires) y el Congreso Nacional. Proyecto de [@ArgElecciones](https://x.com/argelecciones).
 
-Esta es una versión completamente rediseñada, simplificada y optimizada a partir del proyecto original de `jamesm2w`. Se eliminó toda la estructura pesada de Node.js, Vue y Vite, transformando la aplicación en una **SPA (Single Page Application) nativa y auto-contenida en un solo archivo**, ideal para un flujo de trabajo veloz en producción y diseño.
+Muestra, para cada cámara: hemiciclo por bloque, listado de legisladores con mandato vigente, mapa por distrito electoral (donde corresponde), y un panel de costos y transparencia (remuneración, presupuesto, indicadores).
 
-Los algoritmos base que generan la disposición de los diagramas están acreditados a los autores originales: David Richfield, Mathis Rade, Ranjith Siji y Ambady Anand S.
+## Cómo funciona
+- Los datos se cargan en una planilla de Google Sheets (pestañas JURISDICCIONES, CÁMARAS, DISTRITOS, REPRESENTACIÓN, BLOQUES, LEGISLADORES, HISTÓRICO, REMUNERACIONES, PRESUPUESTOS, TRANSPARENCIA, FUENTES, INFO, LISTAS y CONTROL).
+- Las pestañas se publican como CSV y la página las lee en el navegador. El Congreso Nacional se lee de [ArgentinaDatos](https://argentinadatos.com/).
+- No necesita servidor, compilación ni dependencias: son archivos estáticos.
 
-## ✨ Características de esta versión
-*   **Arquitectura Limpia:** Todo el sistema funciona de manera nativa en un único archivo `index.html` sin necesidad de servidores, compiladores ni dependencias externas.
-*   **Diseño Compacto:** Panel interactivo con opción de cálculo de bancas tradicional o filas densas (diseño compacto).
-*   **Fondo Transparente:** Opción directa para exportar el hemiciclo en imagen de alta resolución (PNG) con fondo transparente, ideal para insertar directo en placas de redes sociales.
-*   **Tipografía Estable:** Renderizado de textos optimizado utilizando fuentes de sistema modernas (`Segoe UI` / `-apple-system`) para garantizar que los números y títulos no se deformen al descargar el SVG o PNG.
-*   **Interfaz Dinámica:** Controles rápidos en pantalla para ocultar o mostrar el número total central y los títulos con un solo clic.
+## Archivos
+- `base24.html`: la página principal.
+- `arches.js`: disposición de las bancas del hemiciclo.
+- `panel-datos.js`, `acerca.js`, `actualizacion.js`, `enlaces.js`, `mapa-nacion.js`: módulos que se suman a la página.
+- `*.geojson`: límites de provincias, departamentos, secciones y circuitos (geometrías simplificadas).
 
-## 🚀 Cómo usar o modificar
-Al no requerir Node.js ni instalaciones:
-1. Cloná o descargá este repositorio.
-2. Abrí el archivo `index.html` directamente en cualquier navegador (doble clic) y ya está funcionando.
-3. Para modificar el código, solo necesitás un editor de texto (como Notepad++) y editar el `index.html`.
+## Datos de cada legislador
+Cada fila de la planilla es un mandato. Solo se muestran los mandatos con estado `Vigente`. Cada dato indica su fuente y su estado de verificación. Ver la ventana "Acerca de" de la página.
 
-## 📄 Licencia
-Herramienta bajo licencia GPL v2 (ver `LICENSE.md`). Desarrollada de forma optimizada para **@argelecciones**.
+## Licencias
+- **Código:** GPL v2 (ver `LICENSE.md`). El hemiciclo usa una adaptación de [Arches](https://github.com/elexnuk/arches), distribuida bajo esa licencia.
+- **Datos propios:** CC BY-SA 4.0 (ver `LICENCIA-DATOS.md`).
+- Los datos y mapas de terceros conservan su licencia original.
+
+## Créditos
+IGN y CONAE (límites de departamentos) · Datos Abiertos de la Provincia de Buenos Aires · Misionero~commonswiki, Wikimedia Commons (circuitos de Río Negro, CC BY-SA 3.0) · ArgentinaDatos · DataCP · Ruido, Reverso, Chequeado y AFP · Fundación Libertad · legislaturas, ministerios y portales de transparencia de cada jurisdicción · Arches (David Richfield, Mathis Rade, Ranjith Siji y Ambady Anand S.).

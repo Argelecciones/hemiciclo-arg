@@ -92,9 +92,9 @@ const DATOS_URLS={
     if(!mias.length)h+='<div class="dt-nota">Todavía no hay datos de remuneración cargados para esta cámara.</div>';
     mias.forEach(r=>{
       const m=num(r.monto);
-      h+=`<div class="dt-card"><div class="dt-label">${esc(r.concepto)} · ${esc(r.tipo_monto)} · ${esc(r.periodicidad)}${badge(r.estado_verificacion)}</div>
+      h+=`<div class="dt-card"><div class="dt-label">${esc(r.concepto)} · ${esc(r.tipo_monto)} · ${esc(r.periodicidad)}</div>
         <div class="dt-monto">${m==null?'No disponible':$$(m)}</div>
-        <div class="dt-sub">Período de referencia: ${esc(r.periodo_referencia)}${r.fuente_id?' · Fuente: '+fuenteHtml(D.F,r.fuente_id):''}</div></div>`;
+        <div class="dt-chips"><span class="dt-chip per">Período ${esc(r.periodo_referencia)}</span>${r.fuente_id?'<span class="dt-chip">Fuente: '+fuenteHtml(D.F,r.fuente_id)+'</span>':''}${badge(r.estado_verificacion)}</div></div>`;
     });
     // ranking
     const rk=D.rem.map(r=>({cid:r.camara_id,v:num(r.total_comparable),f:r.fuente_id,p:r.periodo_referencia})).filter(r=>r.v!=null).sort((a,b)=>b.v-a.v);
@@ -127,8 +127,8 @@ const DATOS_URLS={
       const series=Object.values(grupos).filter(g=>new Set(g.map(r=>r.periodo_referencia)).size>=3);
       const nomSeries=new Set(series.map(g=>g[0].indicador));
       const tr=trAll.filter(r=>!nomSeries.has(r.indicador));
-      h+='<div class="dt-sec"><h3>Transparencia</h3>';h+=series.map(g=>serieHtml(g,D)).join('');
-      if(!tr.length&&!series.length)h+='<div class="dt-nota">Todavía no hay indicadores de transparencia cargados para esta cámara.</div>';
+      h+='<div class="dt-sec"><h3'+((!tr.length&&!series.length)?' style="display:inline;margin-right:8px"':'')+'>Transparencia</h3>';h+=series.map(g=>serieHtml(g,D)).join('');
+      if(!tr.length&&!series.length)h+='<span class="dt-nota">Sin indicadores disponibles para esta cámara.</span>';
       tr.forEach(r=>{
         const v=num(r.valor);
         const txt=v==null?esc(r.valor||'—'):(r.unidad==='ARS'?$$(v):v.toLocaleString('es-AR')+(r.unidad?' '+esc(r.unidad):''));

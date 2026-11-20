@@ -53,11 +53,12 @@
     aplicar(p);
   });
 
-  // botón "Copiar enlace"
-  const barra=document.querySelector('.controles');
+  // botón "Copiar enlace" en el encabezado, junto a "Acerca de"
+  const herramienta=document.querySelector('.header a');
+  const barra=herramienta?herramienta.parentNode:null;
   if(barra){
     const css=document.createElement('style');
-    css.textContent='.lnk-btn{margin-left:auto;border:1px solid var(--border2);background:#fff;color:var(--text);font:800 12px \'Inter\',sans-serif;padding:9px 14px;border-radius:8px;cursor:pointer;white-space:nowrap}.lnk-btn:hover{background:var(--subtle)}';
+    css.textContent='.lnk-btn{border:none;background:rgba(255,255,255,.15);color:#fff;font:800 12px \'Inter\',sans-serif;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap}.lnk-btn:hover{background:rgba(255,255,255,.25)}';
     document.head.appendChild(css);
     const b=document.createElement('button');b.type='button';b.className='lnk-btn';b.textContent='🔗 Copiar enlace';
     b.addEventListener('click',()=>{
@@ -67,6 +68,6 @@
       if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(url).then(ok,()=>window.prompt('Copiá el enlace:',url));
       else window.prompt('Copiá el enlace:',url);
     });
-    barra.appendChild(b);
+    barra.insertBefore(b,herramienta);
   }
 })();

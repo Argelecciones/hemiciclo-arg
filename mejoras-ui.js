@@ -11,6 +11,7 @@
   .leyenda .item .p{font-size:10px;min-width:34px}
 
   /* ---- Filtros: nombres largos no rompen la fila ---- */
+  .header-logo{height:44px;width:44px;object-fit:contain;flex-shrink:0}
   .controles{gap:10px 12px}
   .controles .lbl select{max-width:250px}
 
@@ -21,14 +22,19 @@
   .dt-chip a{color:var(--pba);font-weight:800;text-decoration:none}
   .dt-chips .dt-badge{font-size:12px;padding:4px 12px;margin:0}
 
-  /* ---- Mapa en dos columnas en pantallas grandes: mapa a la izquierda, zonas y detalle a la derecha ---- */
+  /* ---- Mapa: mapa y zonas arriba (dos columnas), leyenda debajo del mapa y detalle de ancho completo ---- */
   @media(min-width:900px){
-    #vMapa:not([hidden]){display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);grid-template-areas:"mapa zonas" "leyenda detalle" "nota detalle";gap:0 16px;align-items:start}
+    #vMapa:not([hidden]){display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);grid-template-areas:"mapa zonas" "leyenda nota" "detalle detalle";gap:0 16px;align-items:start}
     #vMapa #map{grid-area:mapa}
     #vMapa #chips{grid-area:zonas;margin-top:0;grid-template-columns:repeat(2,minmax(0,1fr));max-height:460px;overflow-y:auto;align-content:start}
+    #vMapa #chips:not(:has(.chip:nth-child(7))){grid-template-columns:minmax(0,1fr)}
+    #vMapa #chips:not(:has(.chip:nth-child(7))) .chip{padding:12px 14px;font-size:13px}
     #vMapa #leyendaMapa{grid-area:leyenda}
-    #vMapa #notaMapa{grid-area:nota}
-    #vMapa #panelSec{grid-area:detalle;margin-top:12px;padding-top:0;border-top:none}
+    #vMapa #notaMapa{grid-area:nota;margin-top:10px}
+    #vMapa #panelSec{grid-area:detalle;margin-top:16px}
+    #vMapa #panelSec .barra{max-width:560px}
+    #vMapa #panelSec .bloque-lista{column-count:2;column-gap:28px}
+    #vMapa #panelSec .bloque-lista h3,#vMapa #panelSec .bloque-lista ul{break-inside:avoid}
   }
 
   /* ---- Celulares: todo en una columna, sin cortes laterales ---- */
@@ -52,6 +58,13 @@
     .dt-monto{overflow-wrap:anywhere}
   }`;
   document.head.appendChild(css);
+
+  // logo en el encabezado (logo.png en la misma carpeta; si no existe, no se muestra)
+  const hdr=document.querySelector('.header');
+  if(hdr&&!hdr.querySelector('.header-logo')){
+    const im=new Image();im.src='logo.png';im.alt='Logo ArgElecciones';im.className='header-logo';
+    im.onerror=()=>im.remove();hdr.insertBefore(im,hdr.firstChild);
+  }
 
   // bloques: se mueven arriba del hemiciclo (y quedan también arriba del listado)
   const vc=document.querySelector('.vcont'),ley=document.getElementById('leyenda'),vh=document.getElementById('vHemi');

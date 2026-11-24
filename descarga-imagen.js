@@ -24,7 +24,7 @@
 
     // encabezado: logo + título + fecha de composición
     const alto=fmt==='x'?96:90;let x0=P;
-    if(logo&&logo.width){const lw=alto*logo.width/logo.height;//ctx.drawImage(logo,P,P,lw,alto);x0=P+lw+28}
+    if(logo&&logo.width){const lw=alto*logo.width/logo.height;x0=P+28;}
     ctx.textBaseline='alphabetic';ctx.fillStyle='#0f172a';
     const maxT=w-x0-P;
     ajustarFuente(ctx,modelo.titulo,'800',fmt==='x'?54:50,28,maxT);

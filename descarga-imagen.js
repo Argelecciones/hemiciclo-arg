@@ -64,30 +64,46 @@
     // leyenda de bloques
     const items=modelo.bloques.map(b=>({nombre:b.nombre,color:b.color,n:b.n}));
     if(modelo.vacantes>0)items.push({nombre:'Banca sin legislador cargado',color:'#e2e8f0',n:modelo.vacantes});
-    const cols=fmt==='x'?(items.length>12?2:1):(items.length>7?2:1);
+    let cols;
+    if(fmt==='x')cols=(zl.h/items.length>=38)?1:2;else cols=items.length>8?2:1;
     const filas=Math.ceil(items.length/cols);
-    const gap=fmt==='x'?28:36,colW=(zl.w-(cols-1)*gap)/cols;
-    const rowH=Math.min(fmt==='x'?62:70,zl.h/filas);
-    const fs=Math.max(15,Math.min(fmt==='x'?30:32,Math.floor(rowH*0.46)));
-    const sq=Math.round(rowH*0.5);
+    const gap=fmt==='x'?30:40,colW=(zl.w-(cols-1)*gap)/cols;
+    const rowH=Math.min(fmt==='x'?62:72,zl.h/filas);
+    const sq=Math.round(rowH*0.46),xtOff=sq*0.45+14;
+    const pcts=items.map(it=>(it.n/modelo.total*100).toFixed(1).replace('.',',')+'%');
+    // tamaño de letra: el más grande en el que el nombre más largo entra en una línea (mínimo 16)
+    let fs=Math.max(16,Math.min(fmt==='x'?30:32,Math.floor(rowH*0.46)));
+    const medir=(f)=>{
+      ctx.font=`900 ${f}px ${FUENTE}`;const wN=Math.max(...items.map(it=>ctx.measureText(String(it.n)).width));
+      ctx.font=`600 ${Math.round(f*0.64)}px ${FUENTE}`;const wP=Math.max(...pcts.map(p=>ctx.measureText(p).width));
+      ctx.font=`700 ${f}px ${FUENTE}`;const wT=Math.max(...items.map(it=>ctx.measureText(it.nombre).width));
+      return {wN,wP,wT,disp:colW-xtOff-(wN+wP+30)};
+    };
+    let m=medir(fs);
+    while(fs>16&&m.wT>m.disp){fs-=1;m=medir(fs)}
     const yIni=zl.y+(fmt==='x'?(zl.h-rowH*filas)/2:0);
+    const fsP=Math.round(fs*0.64);
     items.forEach((it,i)=>{
       const col=Math.floor(i/filas),fila=i%filas;
       const x=zl.x+col*(colW+gap),y=yIni+fila*rowH,mid=y+rowH/2;
       ctx.fillStyle=it.color;ctx.fillRect(x,mid-sq/2,sq*0.45,sq);
-      ctx.font=`800 ${fs}px ${FUENTE}`;
-      const pct=(it.n/modelo.total*100).toFixed(1).replace('.',',')+'%';
-      const wN=ctx.measureText(String(it.n)).width;
-      ctx.font=`600 ${Math.round(fs*0.68)}px ${FUENTE}`;const wP=ctx.measureText(pct).width;
-      const rightW=wN+wP+26;
-      ctx.font=`700 ${fs}px ${FUENTE}`;ctx.fillStyle='#0f172a';ctx.textBaseline='middle';
-      const xt=x+sq*0.45+14;
-      ctx.fillText(recortar(ctx,it.nombre,colW-(xt-x)-rightW-10),xt,mid);
+      ctx.textBaseline='middle';ctx.fillStyle='#0f172a';
+      ctx.font=`700 ${fs}px ${FUENTE}`;
+      const xt=x+xtOff;
+      if(ctx.measureText(it.nombre).width<=m.disp){ctx.fillText(it.nombre,xt,mid)}
+      else{ // dos líneas
+        const f2=Math.max(13,Math.round(fs*0.82));ctx.font=`700 ${f2}px ${FUENTE}`;
+        const pal=it.nombre.split(' ');let l1='',k=0;
+        while(k<pal.length&&ctx.measureText((l1+' '+pal[k]).trim()).width<=m.disp){l1=(l1+' '+pal[k]).trim();k++}
+        if(!l1){l1=pal[0];k=1}
+        const l2=recortar(ctx,pal.slice(k).join(' '),m.disp);
+        ctx.fillText(l1,xt,mid-f2*0.58);ctx.fillText(l2,xt,mid+f2*0.58);
+      }
       ctx.textAlign='right';
-      ctx.font=`600 ${Math.round(fs*0.68)}px ${FUENTE}`;ctx.fillStyle='#64748b';ctx.fillText(pct,x+colW,mid);
-      ctx.font=`900 ${fs}px ${FUENTE}`;ctx.fillStyle='#0f172a';ctx.fillText(String(it.n),x+colW-wP-14,mid);
+      ctx.font=`600 ${fsP}px ${FUENTE}`;ctx.fillStyle='#64748b';ctx.fillText(pcts[i],x+colW,mid);
+      ctx.font=`900 ${fs}px ${FUENTE}`;ctx.fillStyle='#0f172a';ctx.fillText(String(it.n),x+colW-m.wP-16,mid);
       ctx.textAlign='left';ctx.textBaseline='alphabetic';
-      if(fila<filas-1&&(cols===1||true)){ctx.strokeStyle='#e8edf3';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+rowH);ctx.lineTo(x+colW,y+rowH);ctx.stroke()}
+      if(fila<filas-1){ctx.strokeStyle='#e8edf3';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+rowH);ctx.lineTo(x+colW,y+rowH);ctx.stroke()}
     });
   }
 

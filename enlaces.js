@@ -60,11 +60,11 @@
     const css=document.createElement('style');
     css.textContent='.lnk-btn{border:none;background:rgba(255,255,255,.15);color:#fff;font:800 12px \'Inter\',sans-serif;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap}.lnk-btn:hover{background:rgba(255,255,255,.25)}';
     document.head.appendChild(css);
-    const b=document.createElement('button');b.type='button';b.className='lnk-btn';b.textContent='🔗 Copiar enlace';
+    const b=document.createElement('button');b.type='button';b.className='lnk-btn';const ICO='<svg class="ic" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';b.innerHTML=ICO+'Copiar enlace';
     b.addEventListener('click',()=>{
       escribir();
       const url=location.origin+location.pathname+location.hash;
-      const ok=()=>{b.textContent='✓ Enlace copiado';setTimeout(()=>b.textContent='🔗 Copiar enlace',2000)};
+      const ok=()=>{b.textContent='✓ Enlace copiado';setTimeout(()=>b.innerHTML=ICO+'Copiar enlace',2000)};
       if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(url).then(ok,()=>window.prompt('Copiá el enlace:',url));
       else window.prompt('Copiá el enlace:',url);
     });

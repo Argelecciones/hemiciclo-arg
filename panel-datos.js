@@ -88,7 +88,7 @@ const DATOS_URLS={
     let h='';
     // 1) Remuneración de la cámara
     const mias=D.rem.filter(r=>r.camara_id===cid).sort((a,b)=>String(b.periodo_referencia).localeCompare(String(a.periodo_referencia)));
-    h+='<div class="dt-sec"><h3>Remuneración mensual de un legislador</h3>';
+    h+='<div class="dt-sec"><h3><svg class="ic" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>Remuneración mensual de un legislador</h3>';
     if(!mias.length)h+='<div class="dt-nota">Todavía no hay datos de remuneración cargados para esta cámara.</div>';
     mias.forEach(r=>{
       const m=num(r.monto);
@@ -106,7 +106,7 @@ const DATOS_URLS={
     h+='</div>';
     // 2) Presupuesto
     const pr=D.pre.filter(r=>r.camara_id===cid).sort((a,b)=>String(b.anio).localeCompare(String(a.anio)));
-    h+='<div class="dt-sec"><h3>Presupuesto de la cámara</h3>';
+    h+='<div class="dt-sec"><h3><svg class="ic" viewBox="0 0 24 24"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>Presupuesto de la cámara</h3>';
     if(!pr.length)h+='<div class="dt-nota">Todavía no hay datos de presupuesto cargados para esta cámara.</div>';
     pr.forEach(r=>{
       const ap=num(r.presupuesto_aprobado),vi=num(r.presupuesto_vigente),ej=num(r.presupuesto_ejecutado),pe=num(r.gastos_personal);
@@ -127,7 +127,7 @@ const DATOS_URLS={
       const series=Object.values(grupos).filter(g=>new Set(g.map(r=>r.periodo_referencia)).size>=3);
       const nomSeries=new Set(series.map(g=>g[0].indicador));
       const tr=trAll.filter(r=>!nomSeries.has(r.indicador));
-      h+='<div class="dt-sec"><h3'+((!tr.length&&!series.length)?' style="display:inline;margin-right:8px"':'')+'>Transparencia</h3>';h+=series.map(g=>serieHtml(g,D)).join('');
+      h+='<div class="dt-sec"><h3'+((!tr.length&&!series.length)?' style="display:inline;margin-right:8px"':'')+'><svg class="ic" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>Transparencia</h3>';h+=series.map(g=>serieHtml(g,D)).join('');
       if(!tr.length&&!series.length)h+='<span class="dt-nota">Sin indicadores disponibles para esta cámara.</span>';
       tr.forEach(r=>{
         const v=num(r.valor);

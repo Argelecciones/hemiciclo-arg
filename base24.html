@@ -15,7 +15,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 .header{background:var(--pba);padding:18px 28px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .header-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px}.header-title span{color:var(--acento)}
 .header-sub{font-size:11px;color:#93c5fd;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
-.header a{margin-left:auto;color:#fff;font-size:12px;font-weight:800;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:6px;white-space:nowrap}
+.ic{width:1em;height:1em;vertical-align:-.125em;margin-right:.4em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round} .header a{margin-left:auto;color:#fff;font-size:12px;font-weight:800;text-decoration:none;background:rgba(255,255,255,.15);padding:6px 12px;border-radius:6px;white-space:nowrap}
 .layout{max-width:1100px;margin:0 auto;padding:22px 20px 50px}
 .controles{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
 .tabs{display:flex;background:#e2e8f0;padding:4px;border-radius:8px}
@@ -84,7 +84,7 @@ td small{display:block;color:var(--muted);font-size:11px}
 <div class="header">
   <div><div class="header-title">Base <span>24</span></div>
   <div class="header-sub">Poder Legislativo argentino · @ArgElecciones</div></div>
-  <a href="index.html">← Toolbox</a>
+  <a href="index.html"><svg class="ic" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>Toolbox</a>
 </div>
 <div class="layout">
   <div class="controles">
@@ -236,7 +236,7 @@ async function datosApi(tipo){
     });
   }
   const provs=[...new Set(leg.map(l=>l.filtro))].sort((a,b)=>a.localeCompare(b,'es')).map(p=>[p,p]);
-  return {titulo:tipo==='dip'?'Cámara de Diputados de la Nación':'Senado de la Nación',total:tipo==='dip'?257:72,renov:'',leg,filtros:provs,filtroTodos:'Todas las provincias',colDist:'Provincia'};
+  return {titulo:tipo==='dip'?'Cámara de Diputados de la Nación':'Senado de la Nación',total:tipo==='dip'?257:72,renov:'',extra:tipo==='dip'?' · Renovación parcial cada 2 años · Fuente: Argentina Datos':' · Renovación por tercios cada 2 años · Fuente: Argentina Datos',leg,filtros:provs,filtroTodos:'Todas las provincias',colDist:'Provincia'};
 }
 
 async function cargar(){
@@ -286,7 +286,7 @@ function prepararDatos(){
   D.lista=Object.values(grupos).sort((a,b)=>b.miembros.length-a.miembros.length||a.nombre.localeCompare(b.nombre,'es'));
   D.lista.forEach(b=>b.miembros.sort((x,y)=>x.sort.localeCompare(y.sort,'es')));
   $('titulo').textContent=D.titulo;
-  $('meta').textContent=`${total} bancas · ${D.leg.length} legisladores vigentes`+(D.renov?` · Renovación: ${D.renov}`:'');
+  $('meta').textContent=`${total} bancas · ${D.leg.length} legisladores vigentes`+(D.renov?` · Renovación: ${D.renov}`:'')+(D.extra||'');
   $('selDist').innerHTML=`<option value="">${D.filtroTodos}</option>`+D.filtros.map(([v,n])=>`<option value="${v}">${n}</option>`).join('');
   const mands=[...new Set(D.leg.map(l=>l.mand).filter(Boolean))].sort();
   $('selMand').innerHTML='<option value="">Todos los mandatos</option>'+mands.map(m=>`<option value="${m}">${m}</option>`).join('');

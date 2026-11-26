@@ -94,7 +94,7 @@ const DATOS_URLS={
       const m=num(r.monto);
       h+=`<div class="dt-card"><div class="dt-label">${esc(r.concepto)} · ${esc(r.tipo_monto)} · ${esc(r.periodicidad)}</div>
         <div class="dt-monto">${m==null?'No disponible':$$(m)}</div>
-        <div class="dt-chips"><span class="dt-chip per">Período ${esc(r.periodo_referencia)}</span>${r.fuente_id?'<span class="dt-chip">Fuente: '+fuenteHtml(D.F,r.fuente_id)+'</span>':''}${badge(r.estado_verificacion)}</div></div>`;
+        <div class="dt-chips"><span class="dt-chip per">Período ${esc(r.periodo_referencia)}</span>${r.fuente_id?'<span class="dt-chip">Fuente: '+fuenteHtml(D.F,r.fuente_id)+'</span>':''}${badge(r.estado_verificacion)}</div>${r.observaciones?'<div class="dt-sub" style="margin-top:8px">'+esc(r.observaciones)+'</div>':''}</div>`;
     });
     // ranking
     const rk=D.rem.map(r=>({cid:r.camara_id,v:num(r.total_comparable),f:r.fuente_id,p:r.periodo_referencia})).filter(r=>r.v!=null).sort((a,b)=>b.v-a.v);
